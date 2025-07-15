@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Responsivo - Barbearia Santana</title>
+  
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+  
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  
+  <!-- FullCalendar Locales -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/pt-br.global.min.js"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: #fff;
+      min-height: auto;
+      overflow-x: hidden;
+    }
+
+    /* ========== NAVEGAÇÃO ========== */
+    nav {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 5px 0;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      margin-bottom: 0;
+    }
+
+    nav button {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      margin: 0 5px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    }
+
+    nav button:hover {
+      background: linear-gradient(135deg, #0056b3, #004494);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+    }
+
+    /* ========== DASHBOARD RESPONSIVO ========== */
+    #dashboard {
+      display: flex;
+      flex-direction: column;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 10px;
+      gap: 10px;
+    }
+
+    /* ========== FILTROS MODERNOS ========== */
+    #filters-section {
+      order: 1;
+      margin-bottom: 10px;
+    }
+
+    .filters-container {
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(30, 30, 30, 0.95));
+      padding: 15px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .filters-container h3 {
+      color: #fff;
+      text-align: center;
+      margin: 0 0 15px 0;
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #007bff, #28a745);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 15px;
+      align-items: end;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .filter-group label {
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .filter-group select {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 2px solid #444;
+      background: #fff;
+      color: #333;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .filter-group select:hover {
+      border-color: #007bff;
+      box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .filter-group select:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 25px rgba(0, 123, 255, 0.5);
+    }
+
+    .clear-btn {
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #dc3545, #c82333);
+      color: #fff;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+    }
+
+    .clear-btn:hover {
+      background: linear-gradient(135deg, #c82333, #a02029);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(220, 53, 69, 0.4);
+    }
+
+    /* ========== CARDS DE ESTATÍSTICAS ========== */
+    .stats-section {
+      order: 2;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9));
+      padding: 15px;
+      border-radius: 15px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: transform 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-8px);
+    }
+
+    .stat-card h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 8px 0;
+      background: linear-gradient(135deg, #007bff, #28a745);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-subtitle {
+      font-size: 14px;
+      opacity: 0.7;
+      margin-top: 8px;
+    }
+
+    /* ========== CONTAINERS DOS GRÁFICOS ========== */
+    
+    /* Seção de gráficos principais - sem espaço entre eles */
+    .main-charts-section {
+      order: 3;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+    
+    .single-chart {
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9));
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+      height: 280px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    
+    .single-chart h3 {
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 10px 15px 5px 15px;
+      font-size: 16px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #007bff, #28a745);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      flex-shrink: 0;
+    }
+    
+    .single-chart .chart-content {
+      flex: 1;
+      padding: 5px 10px 10px 10px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+    
+    .single-chart canvas {
+      width: 100% !important;
+      height: 100% !important;
+      flex: 1;
+      max-height: 210px !important;
+      min-height: 190px !important;
+      object-fit: contain;
+    }
+    
+    /* Seção de gráficos duais */
+    .dual-charts-section {
+      order: 4;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      height: 350px;
+    }
+    
+    .dual-chart {
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9));
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    
+    .dual-chart h3 {
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 10px 15px 5px 15px;
+      font-size: 16px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #007bff, #28a745);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      flex-shrink: 0;
+    }
+    
+    .dual-chart .chart-content {
+      flex: 1;
+      padding: 5px 10px 10px 10px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+    
+    .dual-chart canvas {
+      width: 100% !important;
+      height: 100% !important;
+      flex: 1;
+      max-height: 270px !important;
+      min-height: 240px !important;
+      object-fit: contain;
+    }
+    
+    /* Remover estilos antigos que não são mais necessários */
+    .chart-row,
+    .chart-row:nth-of-type(2),
+    .chart-row-appointments,
+    .chart-row-dual {
+      display: none !important;
+    }
+    
+    .chart-container {
+      display: none !important;
+    }
+
+    /* ========== RESPONSIVIDADE ========== */
+    
+    @media (max-width: 1200px) {
+      .dual-charts-section {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        height: auto;
+      }
+      
+      .dual-chart {
+        height: 300px;
+      }
+      
+      .dual-chart canvas {
+        max-height: 220px !important;
+        min-height: 200px !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      #dashboard {
+        padding: 5px;
+      }
+      
+      .single-chart {
+        height: 250px;
+      }
+      
+      .single-chart canvas {
+        max-height: 180px !important;
+        min-height: 160px !important;
+      }
+      
+      .dual-chart {
+        height: 250px;
+      }
+      
+      .dual-chart canvas {
+        max-height: 180px !important;
+        min-height: 160px !important;
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .dual-charts-section {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        height: auto;
+      }
+      
+      .dual-chart {
+        height: 350px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      #dashboard {
+        padding: 8px;
+        gap: 8px;
+      }
+      
+      .single-chart {
+        height: 280px;
+      }
+      
+      .dual-chart {
+        height: 300px;
+      }
+
+      .filters-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+      }
+
+      .filters-container {
+        padding: 20px;
+      }
+
+      .filters-container h3 {
+        font-size: 20px;
+      }
+
+      .stat-card {
+        padding: 20px;
+      }
+
+      .stat-value {
+        font-size: 28px;
+      }
+
+      .single-chart h3,
+      .dual-chart h3 {
+        font-size: 16px;
+      }
+      
+      nav button {
+        padding: 8px 12px;
+        margin: 3px;
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .single-chart {
+        height: 260px;
+      }
+      
+      .dual-chart {
+        height: 280px;
+      }
+      
+      .filters-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      
+      .filters-container h3 {
+        font-size: 18px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+      }
+
+      .single-chart h3,
+      .dual-chart h3 {
+        font-size: 14px;
+      }
+    }
+
+    /* OTIMIZAÇÕES PARA MOBILE E RESPONSIVIDADE */
+    
+    @media (max-width: 768px) {
+      #calendar {
+        margin: 10px;
+        padding: 15px;
+        border-radius: 15px;
+      }
+      
+      .fc-list-event-title {
+        font-size: 13px !important;
+      }
+      
+      .fc-list-event-time {
+        font-size: 12px !important;
+        padding: 3px 6px !important;
+      }
+      
+      .fc-list-event:hover {
+        transform: translateX(4px) scale(1.01) !important;
+      }
+      
+      .fc-toolbar-title {
+        font-size: 1.2em !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      #calendar {
+        margin: 5px;
+        padding: 10px;
+      }
+      
+      .fc-list-event {
+        border-radius: 8px !important;
+        margin-bottom: 6px !important;
+      }
+      
+      .fc-list-event-title {
+        font-size: 12px !important;
+        line-height: 1.3 !important;
+      }
+    }
+
+    /* ========== CALENDÁRIO ========== */
+    #content {
+      width: 100%;
+      min-height: auto;
+      padding: 5px 10px;
+      display: block;
+      margin-top: 0;
+    }
+
+    #calendar {
+      background: rgba(0, 0, 0, 0.95);
+      border-radius: 20px;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 1400px;
+      box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      min-height: 400px;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .fc {
+      background: transparent;
+      color: #fff !important;
+    }
+
+    .fc-toolbar {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 25px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .fc-toolbar-title {
+      color: #fff !important;
+      font-size: 1.8em !important;
+      font-weight: 700 !important;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+      letter-spacing: 0.5px !important;
+    }
+
+    .fc-button {
+      background: linear-gradient(135deg, #2196F3, #1976D2) !important;
+      border: none !important;
+      border-radius: 12px !important;
+      color: #fff !important;
+      padding: 10px 20px !important;
+      margin: 0 6px !important;
+      font-weight: 600 !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3) !important;
+    }
+
+    .fc-button:hover {
+      background: linear-gradient(135deg, #1976D2, #1565C0) !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4) !important;
+    }
+
+    .fc-button:active {
+      transform: translateY(0) !important;
+      transition: all 0.1s ease !important;
+    }
+
+    .fc-button:disabled {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    .fc-daygrid-day {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .fc-daygrid-day:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .fc-daygrid-day-number {
+      color: #fff !important;
+    }
+
+    .fc-col-header-cell {
+      background: rgba(0, 0, 0, 0.3) !important;
+      color: #fff !important;
+      font-weight: bold !important;
+    }
+
+    /* CORREÇÃO DOS PROBLEMAS DE HOVER E CABEÇALHO */
+    
+    /* Lista de eventos - cabeçalho visível */
+    .fc-list-sticky .fc-list-day-cushion {
+      background: linear-gradient(135deg, #2196F3, #1976D2) !important;
+      color: #fff !important;
+      font-weight: 700 !important;
+      padding: 15px 20px !important;
+      border-radius: 12px !important;
+      margin-bottom: 10px !important;
+      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3) !important;
+      text-transform: uppercase !important;
+      letter-spacing: 1px !important;
+      font-size: 14px !important;
+    }
+
+    /* Linhas dos eventos - hover com contraste adequado */
+    .fc-list-event {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      margin-bottom: 8px !important;
+      border-radius: 12px !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      overflow: hidden !important;
+      backdrop-filter: blur(5px) !important;
+    }
+
+    .fc-list-event:hover {
+      background: rgba(0, 0, 0, 0.7) !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+      transform: translateX(8px) scale(1.02) !important;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Estados ativos e selecionados */
+    .fc-list-event:active,
+    .fc-list-event.fc-event-selected,
+    .fc-list-event.selected {
+      background: rgba(0, 0, 0, 0.7) !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* Linha clicada/pressionada */
+    .fc-list-event:active {
+      transform: translateX(3px) !important;
+      transition: all 0.1s ease !important;
+    }
+
+    .fc-list-event-title {
+      color: #fff !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      line-height: 1.4 !important;
+      letter-spacing: 0.2px !important;
+    }
+
+    .fc-list-event-time {
+      color: #e0e0e0 !important;
+      font-weight: 700 !important;
+      font-size: 13px !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      padding: 4px 8px !important;
+      border-radius: 6px !important;
+      margin-right: 10px !important;
+    }
+
+    /* Cabeçalho da tabela de eventos */
+    .fc-list-table thead th {
+      background: rgba(0, 123, 255, 0.8) !important;
+      color: #fff !important;
+      font-weight: bold !important;
+      border: none !important;
+      padding: 15px !important;
+    }
+
+    /* Células da lista */
+    .fc-list-event td {
+      border: none !important;
+      padding: 12px !important;
+    }
+
+    /* Dot colorido na lista */
+    .fc-list-event-dot {
+      width: 16px !important;
+      height: 16px !important;
+      border-radius: 50% !important;
+      margin-right: 15px !important;
+      border: 2px solid rgba(255, 255, 255, 0.8) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+      animation: pulse 2s infinite !important;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .fc-event {
+      border-radius: 8px !important;
+      border: none !important;
+      color: #fff !important;
+      font-weight: 600 !important;
+      font-size: 12px !important;
+      padding: 4px 8px !important;
+      margin: 2px 0 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+      transition: all 0.2s ease !important;
+      backdrop-filter: blur(5px) !important;
+    }
+
+    .fc-event:hover {
+      transform: scale(1.05) !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+      z-index: 10 !important;
+    }
+
+    /* ESTILOS ADICIONAIS PARA MELHOR CONTRASTE */
+    
+    /* Garante que o texto seja sempre visível */
+    .fc-list-event * {
+      color: #fff !important;
+    }
+    
+    /* Cabeçalho de data na visualização lista */
+    .fc-list-day-text {
+      color: #fff !important;
+      font-size: 1.2em !important;
+      font-weight: bold !important;
+    }
+    
+    /* Melhora o contraste do cabeçalho de data */
+    .fc-list-day-side-text {
+      color: #fff !important;
+      font-weight: bold !important;
+    }
+    
+    /* Hover mais suave e visível */
+    .fc-list-event:hover .fc-list-event-title,
+    .fc-list-event:hover .fc-list-event-time {
+      color: #fff !important;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+    }
+    
+    /* Background do cabeçalho mais escuro para contraste */
+    .fc-list-day {
+      background: rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    /* Garante visibilidade dos textos na tabela */
+    .fc-list-table {
+      background: transparent !important;
+    }
+    
+    .fc-list-table td {
+      color: #fff !important;
+    }
+    
+    /* Estilo para texto selecionado */
+    .fc-list-event:focus {
+      outline: 2px solid #007bff !important;
+      background: rgba(0, 0, 0, 0.8) !important;
+    }
+    
+    /* ESTADOS ADICIONAIS DE SELEÇÃO E FOCO */
+    
+    /* Quando o evento está em foco via teclado */
+    .fc-list-event:focus-within,
+    .fc-list-event:focus-visible {
+      background: rgba(0, 0, 0, 0.7) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+      outline: 1px solid rgba(0, 123, 255, 0.6) !important;
+    }
+    
+    /* Células da tabela quando clicadas/selecionadas */
+    .fc-list-event td:hover,
+    .fc-list-event td:active,
+    .fc-list-event td:focus {
+      background: transparent !important;
+    }
+    
+    /* Links dentro dos eventos quando ativos */
+    .fc-list-event a:hover,
+    .fc-list-event a:active,
+    .fc-list-event a:focus {
+      background: transparent !important;
+      color: #fff !important;
+    }
+    
+    /* Para elementos específicos do FullCalendar */
+    .fc-list-event .fc-list-event-graphic:hover,
+    .fc-list-event .fc-list-event-title:hover,
+    .fc-list-event .fc-list-event-time:hover {
+      background: transparent !important;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <button onclick="loadPanel('PAINEL')">📊 PAINEL</button>
+    <button onclick="loadPanel('AGENDA_MES')">📅 AGENDA MÊS</button>
+    <button onclick="loadPanel('AGENDA_SEMANA')">📅 AGENDA SEMANA</button>
+    <button onclick="loadPanel('AGENDA_DIA')">📅 AGENDA DIA</button>
+  </nav>
+  
+  <div id="content"></div>
+  
+  <!-- Dashboard Responsivo com Filtros Integrados -->
+  <div id="dashboard" style="display: none;">
+    <!-- Seção de Filtros Modernos -->
+    <div id="filters-section" style="display: none;">
+      <div class="filters-container">
+        <h3>🔍 Filtros do Dashboard</h3>
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>📅 Mês</label>
+            <select id="month-filter">
+              <option value="">Todos os Meses</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>📅 Data</label>
+            <select id="date-filter">
+              <option value="">Todas as Datas</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>👨‍💼 Profissional</label>
+            <select id="professional-filter">
+              <option value="">Todos os Profissionais</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>✂️ Serviço</label>
+            <select id="service-filter">
+              <option value="">Todos os Serviços</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <button id="clear-filters-btn" class="clear-btn">
+              🗑️ Limpar Filtros
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div id="stats-overview" class="stats-section">
+      <div class="stat-card" id="revenue-card">
+        <h3>💰 Faturamento Total</h3>
+        <div class="stat-value" id="total-revenue">R$ 0,00</div>
+        <div class="stat-subtitle">Receita acumulada</div>
+      </div>
+      <div class="stat-card" id="appointments-card">
+        <h3>📋 Agendamentos</h3>
+        <div class="stat-value" id="total-appointments">0</div>
+        <div class="stat-subtitle">Total de serviços</div>
+      </div>
+    </div>
+
+    <!-- Seção de Gráficos Principais -->
+    <div class="main-charts-section">
+      <!-- Gráfico de Linha - Agendamentos -->
+      <div class="single-chart">
+        <h3>📈 Agendamentos por Dia</h3>
+        <div class="chart-content">
+          <canvas id="appointments-line-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico de Barras - Faturamento -->
+      <div class="single-chart">
+        <h3>💰 Faturamento por Dia</h3>
+        <div class="chart-content">
+          <canvas id="revenue-bar-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de Gráficos Duais -->
+    <div class="dual-charts-section">
+      <div class="dual-chart">
+        <h3>✂️ Serviços Mais Solicitados</h3>
+        <div class="chart-content">
+          <canvas id="services-chart"></canvas>
+        </div>
+      </div>
+      <div class="dual-chart">
+        <h3>👨‍💼 Performance dos Profissionais</h3>
+        <div class="chart-content">
+          <canvas id="professionals-chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== DASHBOARD MODERNO COM FILTROS RESPONSIVOS ==========
+    
+    // Variáveis globais
+    let rawData = [];
+    let filteredData = [];
+    let chartInstances = {};
+    
+    // Configurações dos gráficos
+    const chartColors = {
+      primary: '#007bff',
+      success: '#28a745',
+      danger: '#dc3545',
+      warning: '#ffc107',
+      info: '#17a2b8',
+      purple: '#6f42c1',
+      gradient: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6f42c1']
+    };
+
+    // Inicialização quando o DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 Inicializando Dashboard Moderno...');
+      
+      // Verificar se os elementos existem
+      const dashboard = document.getElementById('dashboard');
+      const content = document.getElementById('content');
+      
+      console.log('🔍 Verificando elementos:', {
+        dashboard: !!dashboard,
+        content: !!content
+      });
+      
+      // Carregar o painel automaticamente
+      loadPanel('PAINEL');
+    });
+
+    // Função principal para carregar painéis
+    async function loadPanel(panel) {
+      console.log('🔄 LoadPanel chamado com:', panel);
+      
+      const content = document.getElementById('content');
+      const dashboard = document.getElementById('dashboard');
+      const filtersSection = document.getElementById('filters-section');
+
+      console.log('📍 Elementos encontrados:', {
+        content: !!content,
+        dashboard: !!dashboard, 
+        filtersSection: !!filtersSection
+      });
+
+      if (panel === 'PAINEL') {
+        console.log('📊 Carregando Dashboard...');
+        content.innerHTML = '';
+        dashboard.style.display = 'grid';
+        if (filtersSection) {
+          filtersSection.style.display = 'block';
+        }
+        await initializeDashboard();
+      } else {
+        console.log('📅 Carregando Agenda:', panel);
+        dashboard.style.display = 'none';
+        if (filtersSection) {
+          filtersSection.style.display = 'none';
+        }
+        
+        if (panel === 'AGENDA_MES') {
+          console.log('🗓️ Carregando agenda mensal...');
+          content.innerHTML = '<div id="calendar"></div>';
+          loadCalendar('dayGridMonth');
+        } else if (panel === 'AGENDA_SEMANA') {
+          console.log('📋 Carregando agenda semanal...');
+          content.innerHTML = '<div id="calendar"></div>';
+          loadCalendar('listWeek');
+        } else if (panel === 'AGENDA_DIA') {
+          console.log('📝 Carregando agenda diária...');
+          content.innerHTML = '<div id="calendar"></div>';
+          loadCalendar('listDay');
+        }
+      }
+    }
+
+    // Inicialização do dashboard
+    async function initializeDashboard() {
+      try {
+        console.log('📡 Carregando dados da API...');
+        const response = await fetch('/api/sheet-data-dashboard');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ Dados carregados:', data);
+        
+        // Armazenar dados globalmente
+        rawData = data.rawData || [];
+        filteredData = [...rawData];
+        
+        console.log('📊 Dados processados:', {
+          rawDataCount: rawData.length,
+          filteredDataCount: filteredData.length,
+          sampleData: rawData.slice(0, 3)
+        });
+        
+        // Inicializar componentes
+        populateFilters();
+        setupFilterListeners();
+        
+        // Aguardar um pouco mais para garantir que tudo esteja pronto
+        setTimeout(() => {
+          updateDashboard();
+        }, 500);
+        
+        console.log('🎉 Dashboard inicializado com sucesso!');
+        
+      } catch (error) {
+        console.error('❌ Erro ao carregar dashboard:', error);
+        showError('Erro ao carregar os dados do dashboard');
+      }
+    }
+
+    // Popular filtros dinamicamente
+    function populateFilters() {
+      console.log('🔧 Populando filtros...');
+      
+      if (rawData.length === 0) {
+        console.warn('⚠️ Nenhum dado disponível para filtros');
+        return;
+      }
+
+      const monthFilter = document.getElementById('month-filter');
+      const dateFilter = document.getElementById('date-filter');
+      const professionalFilter = document.getElementById('professional-filter');
+      const serviceFilter = document.getElementById('service-filter');
+
+      // Limpar filtros existentes
+      monthFilter.innerHTML = '<option value="">Todos os Meses</option>';
+      dateFilter.innerHTML = '<option value="">Todas as Datas</option>';
+      professionalFilter.innerHTML = '<option value="">Todos os Profissionais</option>';
+      serviceFilter.innerHTML = '<option value="">Todos os Serviços</option>';
+
+      // Extrair valores únicos
+      const months = new Set();
+      const dates = new Set();
+      const professionals = new Set();
+      const services = new Set();
+
+      rawData.forEach(item => {
+        if (item.Data) {
+          // Para mês (MM/YYYY)
+          const [year, month, day] = item.Data.split('-');
+          months.add(`${month}/${year}`);
+          
+          // Para data completa (DD/MM/YYYY)
+          dates.add(`${day}/${month}/${year}`);
+        }
+        
+        if (item.Profissional) professionals.add(item.Profissional);
+        if (item.Serviço) services.add(item.Serviço);
+      });
+
+      // Adicionar opções aos filtros
+      Array.from(months).sort().forEach(month => {
+        const option = document.createElement('option');
+        option.value = month;
+        option.textContent = month;
+        monthFilter.appendChild(option);
+      });
+
+      Array.from(dates).sort((a, b) => {
+        const [dayA, monthA, yearA] = a.split('/');
+        const [dayB, monthB, yearB] = b.split('/');
+        return new Date(yearA, monthA - 1, dayA) - new Date(yearB, monthB - 1, dayB);
+      }).forEach(date => {
+        const option = document.createElement('option');
+        option.value = date;
+        option.textContent = date;
+        dateFilter.appendChild(option);
+      });
+
+      Array.from(professionals).sort().forEach(professional => {
+        const option = document.createElement('option');
+        option.value = professional;
+        option.textContent = professional;
+        professionalFilter.appendChild(option);
+      });
+
+      Array.from(services).sort().forEach(service => {
+        const option = document.createElement('option');
+        option.value = service;
+        option.textContent = service;
+        serviceFilter.appendChild(option);
+      });
+
+      console.log('✅ Filtros populados:', {
+        months: months.size,
+        dates: dates.size,
+        professionals: professionals.size,
+        services: services.size
+      });
+    }
+
+    // Configurar event listeners dos filtros
+    function setupFilterListeners() {
+      console.log('🎯 Configurando event listeners...');
+      
+      // Listener especial para o filtro MÊS
+      const monthFilter = document.getElementById('month-filter');
+      if (monthFilter) {
+        monthFilter.addEventListener('change', function() {
+          console.log(`🔍 Filtro MÊS alterado para:`, this.value);
+          updateDateFilter(this.value);
+          applyFilters();
+        });
+      }
+
+      // Listeners para outros filtros
+      const otherFilters = [
+        'date-filter', 
+        'professional-filter',
+        'service-filter'
+      ];
+
+      otherFilters.forEach(filterId => {
+        const filter = document.getElementById(filterId);
+        if (filter) {
+          filter.addEventListener('change', function() {
+            console.log(`🔍 Filtro ${filterId} alterado para:`, this.value);
+            applyFilters();
+          });
+        }
+      });
+
+      // Botão limpar filtros
+      const clearBtn = document.getElementById('clear-filters-btn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', clearAllFilters);
+      }
+
+      console.log('✅ Event listeners configurados!');
+    }
+
+    // Atualizar filtro de DATA baseado no MÊS selecionado
+    function updateDateFilter(selectedMonth) {
+      console.log('📅 Atualizando filtro de DATA para o mês:', selectedMonth);
+      
+      const dateFilter = document.getElementById('date-filter');
+      if (!dateFilter) return;
+
+      // Limpar opções existentes
+      dateFilter.innerHTML = '<option value="">Todas as Datas</option>';
+
+      // Se não há mês selecionado, mostrar todas as datas
+      if (!selectedMonth) {
+        const allDates = new Set();
+        rawData.forEach(item => {
+          if (item.Data) {
+            const [year, month, day] = item.Data.split('-');
+            allDates.add(`${day}/${month}/${year}`);
+          }
+        });
+
+        Array.from(allDates).sort((a, b) => {
+          const [dayA, monthA, yearA] = a.split('/');
+          const [dayB, monthB, yearB] = b.split('/');
+          return new Date(yearA, monthA - 1, dayA) - new Date(yearB, monthB - 1, dayB);
+        }).forEach(date => {
+          const option = document.createElement('option');
+          option.value = date;
+          option.textContent = date;
+          dateFilter.appendChild(option);
+        });
+        return;
+      }
+
+      // Filtrar datas apenas do mês selecionado
+      const [selectedMonthNum, selectedYear] = selectedMonth.split('/');
+      const monthDates = new Set();
+      
+      rawData.forEach(item => {
+        if (item.Data) {
+          const [year, month, day] = item.Data.split('-');
+          const itemMonth = `${month}/${year}`;
+          
+          if (itemMonth === selectedMonth) {
+            monthDates.add(`${day}/${month}/${year}`);
+          }
+        }
+      });
+
+      // Adicionar datas do mês selecionado ordenadas
+      Array.from(monthDates).sort((a, b) => {
+        const [dayA] = a.split('/');
+        const [dayB] = b.split('/');
+        return parseInt(dayA) - parseInt(dayB);
+      }).forEach(date => {
+        const option = document.createElement('option');
+        option.value = date;
+        option.textContent = date;
+        dateFilter.appendChild(option);
+      });
+
+      console.log(`✅ Filtro de DATA atualizado com ${monthDates.size} datas do mês ${selectedMonth}`);
+    }
+
+    // Aplicar filtros
+    function applyFilters() {
+      console.log('🔍 Aplicando filtros...');
+      
+      const monthValue = document.getElementById('month-filter').value;
+      const dateValue = document.getElementById('date-filter').value;
+      const professionalValue = document.getElementById('professional-filter').value;
+      const serviceValue = document.getElementById('service-filter').value;
+
+      console.log('📋 Valores dos filtros:', {
+        month: monthValue,
+        date: dateValue,
+        professional: professionalValue,
+        service: serviceValue
+      });
+
+      // Filtrar dados
+      filteredData = rawData.filter(item => {
+        let passes = true;
+
+        // Filtro de mês
+        if (monthValue && item.Data) {
+          const [year, month] = item.Data.split('-');
+          const itemMonth = `${month}/${year}`;
+          passes = passes && itemMonth === monthValue;
+        }
+
+        // Filtro de data
+        if (dateValue && item.Data) {
+          const [year, month, day] = item.Data.split('-');
+          const itemDate = `${day}/${month}/${year}`;
+          passes = passes && itemDate === dateValue;
+        }
+
+        // Filtro de profissional
+        if (professionalValue) {
+          passes = passes && item.Profissional === professionalValue;
+        }
+
+        // Filtro de serviço
+        if (serviceValue) {
+          passes = passes && item.Serviço === serviceValue;
+        }
+
+        return passes;
+      });
+
+      console.log(`📊 Dados filtrados: ${filteredData.length} de ${rawData.length} registros`);
+      
+      // Atualizar dashboard com dados filtrados
+      updateDashboard();
+    }
+
+    // Limpar todos os filtros
+    function clearAllFilters() {
+      console.log('🗑️ Limpando todos os filtros...');
+      
+      document.getElementById('month-filter').value = '';
+      document.getElementById('date-filter').value = '';
+      document.getElementById('professional-filter').value = '';
+      document.getElementById('service-filter').value = '';
+      
+      // Resetar o filtro de DATA para mostrar todas as datas
+      updateDateFilter('');
+      
+      filteredData = [...rawData];
+      updateDashboard();
+      
+      console.log('✅ Filtros limpos!');
+    }
+
+    // Atualizar dashboard com dados filtrados
+    function updateDashboard() {
+      console.log('📈 Atualizando dashboard...');
+      
+      updateStatCards();
+      
+      // Adicionar um pequeno delay para garantir que os elementos DOM estejam prontos
+      setTimeout(() => {
+        updateAppointmentsLineChart();
+        updateRevenueBarChart();
+        updateServicesChart();
+        updateProfessionalsChart();
+        
+        // Forçar redimensionamento dos gráficos após criação
+        setTimeout(() => {
+          Object.values(chartInstances).forEach(chart => {
+            if (chart && typeof chart.resize === 'function') {
+              chart.resize();
+            }
+          });
+        }, 200);
+      }, 100);
+      
+      console.log('✅ Dashboard atualizado!');
+    }
+
+    // Atualizar cards de estatísticas
+    function updateStatCards() {
+      const totalRevenue = filteredData.reduce((sum, item) => sum + parseFloat(item.Valor || 0), 0);
+      const totalAppointments = filteredData.length;
+
+      document.getElementById('total-revenue').textContent = 
+        totalRevenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('total-appointments').textContent = totalAppointments;
+    }
+
+    // Gráfico de linha - Agendamentos por dia
+    function updateAppointmentsLineChart() {
+      console.log('🔄 Atualizando gráfico de linha...');
+      const ctx = document.getElementById('appointments-line-chart').getContext('2d');
+      
+      if (!ctx) {
+        console.error('❌ Canvas appointments-line-chart não encontrado!');
+        return;
+      }
+      
+      // Destruir gráfico anterior se existir
+      if (chartInstances.appointmentsLine) {
+        chartInstances.appointmentsLine.destroy();
+      }
+
+      // Agrupar dados por dia
+      const appointmentsByDay = {};
+      filteredData.forEach(item => {
+        if (item.Data) {
+          const [year, month, day] = item.Data.split('-');
+          const dateKey = `${day}/${month}`;
+          appointmentsByDay[dateKey] = (appointmentsByDay[dateKey] || 0) + 1;
+        }
+      });
+
+      const labels = Object.keys(appointmentsByDay).sort((a, b) => {
+        const [dayA, monthA] = a.split('/');
+        const [dayB, monthB] = b.split('/');
+        return new Date(2024, monthA - 1, dayA) - new Date(2024, monthB - 1, dayB);
+      });
+      
+      const data = labels.map(label => appointmentsByDay[label]);
+      const maxValue = Math.max(...data, 0);
+      
+      console.log('📊 Dados do gráfico de linha:', { labels, data, maxValue });
+
+      chartInstances.appointmentsLine = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Agendamentos',
+            data: data,
+            borderColor: chartColors.primary,
+            backgroundColor: chartColors.primary + '20',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: chartColors.primary,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          resizeDelay: 100,
+          layout: {
+            padding: 5
+          },
+          interaction: {
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#fff' }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.1)' },
+              ticks: { color: '#fff' }
+            },
+            y: {
+              beginAtZero: true,
+              min: 0,
+              suggestedMax: maxValue > 0 ? Math.ceil(maxValue * 1.2) : 10,
+              grid: { 
+                color: 'rgba(255,255,255,0.1)',
+                drawBorder: true,
+                drawOnChartArea: true,
+                drawTicks: true
+              },
+              ticks: { 
+                color: '#fff',
+                stepSize: Math.max(1, Math.ceil(maxValue / 10)),
+                min: 0,
+                includeBounds: true,
+                callback: function(value) {
+                  return Number.isInteger(value) ? value : '';
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      console.log('✅ Gráfico de linha criado!');
+    }
+
+    // Gráfico de barras - Faturamento por dia
+    function updateRevenueBarChart() {
+      console.log('🔄 Atualizando gráfico de faturamento...');
+      const ctx = document.getElementById('revenue-bar-chart').getContext('2d');
+      
+      if (!ctx) {
+        console.error('❌ Canvas revenue-bar-chart não encontrado!');
+        return;
+      }
+      
+      if (chartInstances.revenueBar) {
+        chartInstances.revenueBar.destroy();
+      }
+
+      // Agrupar faturamento por dia
+      const revenueByDay = {};
+      filteredData.forEach(item => {
+        if (item.Data && item.Valor) {
+          const [year, month, day] = item.Data.split('-');
+          const dateKey = `${day}/${month}`;
+          revenueByDay[dateKey] = (revenueByDay[dateKey] || 0) + parseFloat(item.Valor);
+        }
+      });
+
+      const labels = Object.keys(revenueByDay).sort((a, b) => {
+        const [dayA, monthA] = a.split('/');
+        const [dayB, monthB] = b.split('/');
+        return new Date(2024, monthA - 1, dayA) - new Date(2024, monthB - 1, dayB);
+      });
+      
+      const data = labels.map(label => revenueByDay[label]);
+      const maxValue = Math.max(...data, 0);
+      
+      console.log('💰 Dados do gráfico de faturamento:', { labels, data, maxValue });
+
+      chartInstances.revenueBar = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Faturamento (R$)',
+            data: data,
+            backgroundColor: chartColors.success + '80',
+            borderColor: chartColors.success,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          resizeDelay: 100,
+          layout: {
+            padding: 5
+          },
+          interaction: {
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#fff' }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.1)' },
+              ticks: { color: '#fff' }
+            },
+            y: {
+              beginAtZero: true,
+              min: 0,
+              suggestedMax: maxValue > 0 ? Math.ceil(maxValue * 1.2) : 100,
+              grid: { 
+                color: 'rgba(255,255,255,0.1)',
+                drawBorder: true,
+                drawOnChartArea: true,
+                drawTicks: true
+              },
+              ticks: { 
+                color: '#fff',
+                min: 0,
+                includeBounds: true,
+                callback: function(value) {
+                  if (value === 0) return 'R$ 0';
+                  return 'R$ ' + value.toLocaleString('pt-BR');
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      console.log('✅ Gráfico de faturamento criado!');
+    }
+
+    // Gráfico de barras horizontais - Serviços
+    function updateServicesChart() {
+      const ctx = document.getElementById('services-chart').getContext('2d');
+      
+      if (chartInstances.services) {
+        chartInstances.services.destroy();
+      }
+
+      // Contar serviços
+      const serviceCount = {};
+      filteredData.forEach(item => {
+        if (item.Serviço) {
+          serviceCount[item.Serviço] = (serviceCount[item.Serviço] || 0) + 1;
+        }
+      });
+
+      const labels = Object.keys(serviceCount);
+      const data = Object.values(serviceCount);
+      const maxValue = Math.max(...data, 0);
+
+      chartInstances.services = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Quantidade',
+            data: data,
+            backgroundColor: chartColors.gradient.map(color => color + '80'),
+            borderColor: chartColors.gradient,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          resizeDelay: 100,
+          layout: {
+            padding: 5
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#fff' }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              min: 0,
+              suggestedMax: maxValue > 0 ? Math.ceil(maxValue * 1.2) : 10,
+              grid: { 
+                color: 'rgba(255,255,255,0.1)',
+                drawBorder: true,
+                drawOnChartArea: true,
+                drawTicks: true
+              },
+              ticks: { 
+                color: '#fff',
+                stepSize: Math.max(1, Math.ceil(maxValue / 8)),
+                min: 0,
+                includeBounds: true,
+                callback: function(value) {
+                  return Number.isInteger(value) ? value : '';
+                }
+              }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.1)' },
+              ticks: { color: '#fff' }
+            }
+          }
+        }
+      });
+    }
+
+    // Gráfico de pizza - Profissionais
+    function updateProfessionalsChart() {
+      const ctx = document.getElementById('professionals-chart').getContext('2d');
+      
+      if (chartInstances.professionals) {
+        chartInstances.professionals.destroy();
+      }
+
+      // Contar atendimentos por profissional
+      const professionalCount = {};
+      filteredData.forEach(item => {
+        if (item.Profissional) {
+          professionalCount[item.Profissional] = (professionalCount[item.Profissional] || 0) + 1;
+        }
+      });
+
+      const labels = Object.keys(professionalCount);
+      const data = Object.values(professionalCount);
+      const totalValue = data.reduce((sum, value) => sum + value, 0);
+
+      chartInstances.professionals = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: chartColors.gradient.map(color => color + '80'),
+            borderColor: chartColors.gradient,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          resizeDelay: 100,
+          layout: {
+            padding: 5
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { 
+                color: '#fff',
+                padding: 20
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.parsed;
+                  const percentage = ((value / totalValue) * 100).toFixed(1);
+                  return `${context.label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Funções de calendário
+    async function loadCalendar(initialView) {
+      try {
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) {
+          console.error('❌ Elemento #calendar não encontrado!');
+          return;
+        }
+
+        // Evita recriação do calendário
+        if (window.calendar && typeof window.calendar.destroy === 'function') {
+          console.log('🗑️ Destruindo calendário anterior...');
+          window.calendar.destroy();
+        }
+
+        console.log('📡 Buscando dados da API /api/sheet-data...');
+        const response = await fetch('/api/sheet-data');
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response headers:', response.headers);
+        
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Dados recebidos da API:', data);
+        console.log('📋 Quantidade de registros:', data?.length || 0);
+        console.log('📋 Primeiro item de exemplo:', data[0]);
+
+        const events = data.map(item => {
+          console.log('📝 Processando item:', item);
+          return {
+            title: formatEventTitle(item, initialView), // Formata o título com base na visualização
+            start: `${item.date}T${item.time}`,
+            display: 'block',
+            allDay: false,
+            backgroundColor: getEventColor(item.time), // Define a cor de fundo com base no horário
+            extendedProps: { 
+              time: item.time,
+              phone: formatPhone(item.phone) // Formata o telefone
+            }
+          };
+        });
+
+        console.log('📅 Eventos processados para o calendário:', events);
+
+        // Configuração do FullCalendar
+        window.calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: initialView, // Define a visualização inicial dinamicamente
+          locale: 'pt-br',
+          themeSystem: 'standard',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: '' // Remove outras visualizações
+          },
+          buttonText: { // Configura os textos dos botões do FullCalendar
+            today: 'Hoje',
+            list: 'Lista'
+          },
+          contentHeight: 'auto', // Configura a altura do conteúdo como dinâmica
+          aspectRatio: 1.5, // Define a proporção do calendário
+          events: events, // Inclui os eventos processados
+          views: {
+            listDay: {
+              type: 'list',
+              duration: { days: 1 },
+              slotMinTime: '09:00:00',
+              slotMaxTime: '20:00:00',
+              slotDuration: '00:30:00',
+              listDayFormat: { weekday: 'long', day: 'numeric', month: 'long' }, // Formato do cabeçalho
+              listDaySideFormat: false // Remove o formato lateral
+            },
+            listWeek: {
+              type: 'list',
+              duration: { weeks: 1 }
+            }
+          },
+          eventTimeFormat: { // Formato do horário exibido
+            hour: '2-digit',
+            minute: '2-digit',
+            meridiem: false
+          },
+          eventOrder: 'start,-duration,allDay,title', // Ordena os eventos por horário
+          eventDidMount: function(info) {
+            const time = info.event.extendedProps.time;
+            if (time) {
+              info.el.setAttribute('data-time', time); // Adiciona o atributo data-time para todas as visualizações
+
+              // Adiciona o atributo data-time ao marcador (dot) nas visualizações de lista
+              const dotEl = info.el.querySelector('.fc-list-event-dot');
+              if (dotEl) {
+                dotEl.style.backgroundColor = getEventColor(time); // Aplica a cor diretamente ao marcador
+              }
+            }
+          }
+        });
+
+        console.log('🚀 Renderizando calendário...');
+        window.calendar.render();
+        console.log('✅ Calendário renderizado com sucesso!');
+
+      } catch (error) {
+        console.error('❌ Erro ao carregar o calendário:', error.message);
+        const calendarEl = document.getElementById('calendar');
+        if (calendarEl) {
+          calendarEl.innerHTML = `<p style="color: #fff; text-align: center; padding: 50px;">❌ ${error.message}</p>`;
+        }
+      }
+    }
+
+    // Formata o título do evento com base na visualização
+    function formatEventTitle(item, view) {
+      console.log('🏷️ Formatando título para item:', item);
+      
+      const profissional = item.Profissional || 'Profissional não informado';
+      const servico = item.Serviço || 'Serviço não informado';
+      const cliente = item.client || 'Cliente não informado';
+      const telefone = item.phone || '';
+      
+      const formattedPhone = formatPhone(telefone);
+      
+      console.log('🏷️ Dados extraídos:', { profissional, servico, cliente, telefone });
+      
+      // Ícones apenas para diferentes tipos de serviço (NÃO para profissionais)
+      const serviceIcons = {
+        'Barba': '🧔',
+        'Corte': '✂️',
+        'Barba e Cabelo': '💇‍♂️',
+        'Corte com Reflexo': '🎨',
+        'Alisamento': '📏',
+        'Escova': '🌪️',
+        'Hidratação': '💧'
+      };
+      
+      const serviceIcon = serviceIcons[servico] || '✂️';
+      
+      if (view === 'listDay') {
+        return `${profissional} • ${serviceIcon} ${servico} • 👤 ${cliente} • 📞 ${formattedPhone}`;
+      } else if (view === 'listWeek') {
+        return `${profissional} • ${serviceIcon} ${servico} • 👤 ${cliente}`;
+      } else {
+        // Para view mensal - mostra profissional e cliente
+        return `${profissional} - ${cliente}`;
+      }
+    }
+
+    // Formata o telefone no formato (xx) xxxxx-xxxx
+    function formatPhone(phone) {
+      if (!phone || typeof phone !== 'string') return phone; // Retorna como está se não for válido
+      const cleanedPhone = phone.replace(/\D/g, ''); // Remove caracteres não numéricos
+      if (cleanedPhone.length !== 11) return phone; // Retorna como está se não tiver 11 dígitos
+      return `(${cleanedPhone.substring(0, 2)}) ${cleanedPhone.substring(2, 7)}-${cleanedPhone.substring(7)}`; // Formata corretamente
+    }
+
+    function getEventColor(time) {
+      // Cores mais vibrantes e modernas com melhor contraste
+      const colors = {
+        '09:00': '#4CAF50', // Verde moderno
+        '10:00': '#2196F3', // Azul material
+        '11:00': '#FF9800', // Laranja vibrante
+        '12:00': '#F44336', // Vermelho material
+        '13:00': '#9C27B0', // Roxo vibrante
+        '14:00': '#00BCD4', // Ciano moderno
+        '15:00': '#FF5722', // Laranja profundo
+        '16:00': '#795548', // Marrom elegante
+        '17:00': '#E91E63', // Rosa material
+        '18:00': '#607D8B', // Azul acinzentado
+        '19:00': '#3F51B5', // Índigo
+        '20:00': '#8BC34A'  // Verde claro
+      };
+      return colors[time] || '#2196F3'; // Azul material como padrão
+    }
+
+    function showError(message) {
+      console.error('❌', message);
+    }
+  </script>
+</body>
+</html>

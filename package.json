@@ -1,0 +1,52 @@
+{
+  "name": "whatsapp-bot-barbearia",
+  "version": "1.0.0",
+  "description": "🚀 Sistema completo de agendamentos para barbearias via WhatsApp com Google Sheets",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "start:prod": "NODE_ENV=production node index.js",
+    "dev": "nodemon index.js",
+    "dashboard": "cd Painelhtml && node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
+    "axios": "^1.10.0",
+    "google-spreadsheet": "^4.1.4",
+    "googleapis": "^150.0.1",
+    "open": "^10.1.0",
+    "puppeteer": "^24.11.2",
+    "puppeteer-core": "^24.11.2",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.31.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cesarbarbeariastyle/whatsapp-bot-barbearia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cesarbarbeariastyle/whatsapp-bot-barbearia/issues"
+  },
+  "homepage": "https://github.com/cesarbarbeariastyle/whatsapp-bot-barbearia#readme",
+  "keywords": [
+    "whatsapp",
+    "agendamento",
+    "google-sheets",
+    "automation",
+    "bot",
+    "barbearia",
+    "barbershop",
+    "scheduling",
+    "node.js"
+  ],
+  "author": "Cesar",
+  "license": "MIT"
+}
