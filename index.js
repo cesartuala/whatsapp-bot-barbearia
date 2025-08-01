@@ -31,7 +31,6 @@ const checkAndReconnect = () => {
 // Estado global para rastrear informações dos clientes
 const state = {};
 
-// ...existing code...
 // Function to reconnect the client
 const reconnectClient = async () => {
   try {
