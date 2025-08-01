@@ -31,58 +31,7 @@ const checkAndReconnect = () => {
 // Estado global para rastrear informações dos clientes
 const state = {};
 
-// Função para verificar a disponibilidade do agendamento
-// const checkAvailability = async (date, time, professional) => {
-//   try {
-//     const response = await sheets.spreadsheets.values.get({
-//       spreadsheetId: SPREADSHEET_ID,
-//       range: "Agendamentos!C3:H", // Data, Hora, Cliente, Serviço, Profissional
-//     });
-
-//     const rows = response.data.values;
-//     if (!rows || rows.length === 0) {
-//       console.log(`checkAvailability: Nenhum agendamento encontrado.`);
-//       return true; // Nenhum agendamento, então está disponível
-//     }
-
-//     for (const row of rows) {
-//       const [
-//         appointmentDate, // Coluna C: Data
-//         appointmentTime, // Coluna D: Hora
-//         clientName, // Coluna E: Cliente
-//         phoneNumber, // Coluna F: Telefone - corrigido
-//         service, // Coluna G: Serviço - corrigido
-//         appointmentProfessional, // Coluna H: Profissional - corrigido
-//       ] = row;
-
-//       // Valida se o profissional do agendamento é o mesmo
-//       if (
-//         typeof date === "string" &&
-//         typeof time === "string" &&
-//         typeof professional === "string"
-//       ) {
-//         // Valida se o texto digitado e o texto recebido na planilha é o mesmo
-//         if (
-//           date === appointmentDate &&
-//           time === appointmentTime &&
-//           professional === appointmentProfessional
-//         ) {
-//           console.warn(
-//             `checkAvailability: Conflito de agendamento encontrado: ${date} às ${time} com ${professional}`
-//           );
-//           return false; // Conflito encontrado
-//         }
-//       }
-//     }
-//     return true; // Nenhum conflito
-//   } catch (error) {
-//     console.error(
-//       "checkAvailability: Erro de rede ao verificar disponibilidade:",
-//       error
-//     );
-//     return false; // Assume indisponível em caso de erro
-//   }
-// };
+// ...existing code...
 // Function to reconnect the client
 const reconnectClient = async () => {
   try {
@@ -96,37 +45,14 @@ const reconnectClient = async () => {
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
-    headless: true, // Modo headless: não abre janela
+    headless: true,
+    executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', // Caminho padrão do Chrome no Windows
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox"
     ]
   }
 });
-// Nova função para obter o índice da última linha preenchida em uma aba
-// const getLastRowIndex = async (sheetName) => {
-//   try {
-//     const response = await sheets.spreadsheets.values.get({
-//       spreadsheetId: SPREADSHEET_ID,
-//       range: `${sheetName}!A:A`, // Lê somente a primeira coluna para economizar recursos
-//     });
-
-//     const rows = response.data.values;
-//     if (!rows || rows.length === 0) {
-//       return 2; // Se não houver linhas, retorna 2 (a primeira linha de dados é a 2)
-//     }
-//     const foundLastRowIndex = rows.length + 1;
-//     return foundLastRowIndex; // Retorna o índice da última linha + 1, pois queremos a próxima linha vazia. Adiciona mais um por causa do header.
-//   } catch (error) {
-//     console.error(
-//       `getLastRowIndex: Erro ao obter a última linha da aba "${sheetName}":`,
-//       error
-//     );
-//     throw error; // Re-lança o erro para ser tratado na função chamadora
-//   }
-// };
-
-// ...existing code...
 
 // Função para adicionar um delay (atraso)
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -279,22 +205,6 @@ const checkExistingAppointment = async (phoneNumber) => {
     return null; // Assume que não há agendamento em caso de erro
   }
 };
-
-//Função para pegar o sheetId correto
-// const getSheetId = async (sheetName) => {
-//   const metadata = await sheets.spreadsheets.get({
-//     spreadsheetId: SPREADSHEET_ID,
-//   });
-//   const sheet = metadata.data.sheets.find((s) => s.properties.title === sheetName);
-//   return sheet.properties.sheetId;
-// };
-
-// ...existing code...
-
-// ...existing code...
-
-// ...existing code...
-
 // Função para enviar a agenda de uma data específica
 const sendAgendaForDate = async (chatId, date) => {
   console.log(`sendAgendaForDate: Iniciando envio da agenda para a data ${date}...`);
@@ -351,12 +261,6 @@ const sendAgendaForDate = async (chatId, date) => {
   }
 };
 
-// ...existing code...
-
-// ...existing code...
-
-// ...existing code...
-
 // Event listener for disconnected event
 client.on("disconnected", (reason) => {
   console.error("client.on('disconnected'): WhatsApp desconectado:", reason);
@@ -377,14 +281,11 @@ client.on("qr", (qr) => {
 // Evento para indicar que o cliente está pronto
 client.on("ready", () => {
   console.log("✅ WhatsApp conectado com sucesso!");
-  // Log extra para garantir que o cliente está pronto
-  console.log("[DEBUG] Evento 'ready' disparado. Cliente está pronto para receber mensagens.");
 });
 
 // Evento para lidar com mensagens recebidas
 client.on("message", async (message) => {
   try {
-    console.log(`[DEBUG] Mensagem recebida de ${message.from}: ${message.body}`);
     const chatId = message.from;
     // Ignora mensagens vindas de grupos
     if (chatId.includes("@g.us")) {
@@ -641,7 +542,6 @@ client.on("message", async (message) => {
       }
     }
 
-
     // Verifica se a mensagem é para solicitar a agenda de uma data específica
     if (receivedText.startsWith("Agenda do dia")) {
       const date = receivedText.replace("Agenda do dia", "").trim(); // Extrai a data do texto
@@ -658,54 +558,6 @@ client.on("message", async (message) => {
 
       // Envia a agenda para a data especificada
       await sendAgendaForDate(chatId, formattedDate);
-      return;
-    }
-
-    // Função: Resumo do dia DD/MM
-    if (receivedText.toLowerCase().startsWith("resumo do dia")) {
-      const date = receivedText.replace(/resumo do dia/i, "").trim();
-      const formattedDate = formatDate(date);
-      if (!formattedDate) {
-        await sendMessageWithDelay(
-          chatId,
-          "O formato de data está inválido. Por favor, envie no formato: Resumo do dia DD/MM.",
-          2000
-        );
-        return;
-      }
-      // 1. Preenche a célula A1 da aba "Resumo do Dia" com a data
-      try {
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: SPREADSHEET_ID,
-          range: 'Resumo do Dia!A1',
-          valueInputOption: 'USER_ENTERED',
-          resource: { values: [[formattedDate]] }
-        });
-      } catch (error) {
-        console.error('Erro ao preencher A1 da aba Resumo do Dia:', error);
-        await sendMessageWithDelay(chatId, 'Erro ao preparar o resumo do dia.', 2000);
-        return;
-      }
-      // 2. Envia mensagem de cálculo
-      await sendMessageWithDelay(chatId, 'Calculando resumo do dia...', 2000);
-      // 3. Aguarda 5 segundos
-      await delay(5000);
-      // 4. Lê o valor de H1 da aba "Resumo do Dia"
-      try {
-        const response = await sheets.spreadsheets.values.get({
-          spreadsheetId: SPREADSHEET_ID,
-          range: 'Resumo do Dia!H1'
-        });
-        const value = response.data.values && response.data.values[0] && response.data.values[0][0] ? response.data.values[0][0] : null;
-        if (value) {
-          await sendMessageWithDelay(chatId, value, 2000);
-        } else {
-          await sendMessageWithDelay(chatId, 'Resumo do dia não encontrado na planilha.', 2000);
-        }
-      } catch (error) {
-        console.error('Erro ao ler H1 da aba Resumo do Dia:', error);
-        await sendMessageWithDelay(chatId, 'Erro ao buscar o resumo do dia.', 2000);
-      }
       return;
     }
 
@@ -1116,13 +968,9 @@ Podemos confirmar o agendamento?
 client.initialize();
 
 // Função para verificar se deve enviar lembrete (implementação básica)
-// Função para verificar se deve enviar lembrete (igual ao save2.js)
 function shouldSendReminder() {
-  const now = getBrazilDate();
-  const currentHour = now.getHours().toString().padStart(2, "0");
-  const currentMinute = now.getMinutes().toString().padStart(2, "0");
-  const currentTime = `${currentHour}:${currentMinute}`;
-  return reminderTimes.includes(currentTime);
+  // Personalize a lógica conforme necessário. Por padrão, retorna false.
+  return false;
 }
 
 // ... (seu código atual aqui) ...
@@ -1195,8 +1043,8 @@ const scheduleDailyAgenda = () => {
     now.getFullYear(),
     now.getMonth(),
     now.getDate(),
-    8, // Hora: 08:00
-    0, // Minuto: 00
+    0, // Hora: 08:00
+    8, // Minuto: 00
     0, // Segundo: 00
     0
   );
