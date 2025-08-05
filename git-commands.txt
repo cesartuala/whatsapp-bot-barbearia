@@ -1,0 +1,41 @@
+# Comandos para subir o projeto no GitHub
+
+# 1. Inicializar repositório Git (se ainda não foi inicializado)
+git init
+
+# 2. Adicionar todos os arquivos
+git add .
+
+# 3. Fazer commit inicial
+git commit -m "feat: WhatsApp Bot Barbearia - Sistema completo de agendamentos
+
+- ✅ Bot WhatsApp com integração Google Sheets
+- ✅ Sistema de agendamentos automático
+- ✅ Validação flexível de horários
+- ✅ Cancelamento e bloqueio de horários
+- ✅ Agenda diária automática
+- ✅ Sistema de lembretes e avaliações
+- ✅ Múltiplos profissionais
+- ✅ Deploy pronto para Google Cloud
+- ✅ CI/CD com GitHub Actions
+- ✅ Documentação completa"
+
+# 4. Adicionar repositório remoto (substitua SEU_USUARIO pelo seu usuário GitHub)
+git remote add origin https://github.com/SEU_USUARIO/whatsapp-bot-barbearia.git
+
+# 5. Verificar branch atual e criar main se necessário
+git branch -M main
+
+# 6. Push inicial
+git push -u origin main
+
+# COMANDOS ALTERNATIVOS CASO JÁ TENHA O REPOSITÓRIO:
+
+# Se o repositório já existe no GitHub e você quer substituir tudo:
+# git remote add origin https://github.com/SEU_USUARIO/whatsapp-bot-barbearia.git
+# git push -f origin main
+
+# Para atualizações futuras:
+# git add .
+# git commit -m "Sua mensagem de commit"
+# git push origin main

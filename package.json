@@ -1,0 +1,46 @@
+{
+  "name": "whatsapp-bot-barbearia",
+  "version": "1.0.0",
+  "description": "WhatsApp Bot para agendamento de barbearia com integração Google Sheets",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "node test-suite.js",
+    "deploy": "gcloud app deploy",
+    "deploy-staging": "gcloud app deploy --version staging --no-promote",
+    "logs": "gcloud app logs tail -s default",
+    "health": "node health-check.js"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "barbearia",
+    "agendamento",
+    "google-sheets",
+    "nodejs",
+    "automation"
+  ],
+  "author": "Cesar",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seu-usuario/whatsapp-bot-barbearia.git"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "^1.31.0",
+    "googleapis": "^154.0.0",
+    "qrcode-terminal": "^0.12.0",
+    "axios": "^1.11.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

@@ -1,0 +1,64 @@
+# Google App Engine Configuration
+runtime: nodejs20
+
+# Environment configuration
+env_variables:
+  NODE_ENV: production
+  TZ: America/Sao_Paulo
+  GOOGLE_SPREADSHEET_ID: "your_spreadsheet_id_here"
+  BOT_NAME: "Barbearia Santana"
+  OWNER_PHONE: "5511939545171@c.us"
+  LOG_LEVEL: "info"
+  RATE_LIMIT_MESSAGES: "50"
+  RATE_LIMIT_WINDOW: "3600000"
+  SESSION_MAX_TIME: "21600000"
+  AUTO_RESTART: "true"
+  BACKUP_ENABLED: "true"
+  BACKUP_INTERVAL: "86400000"
+
+# Resource allocation
+automatic_scaling:
+  min_instances: 1
+  max_instances: 3
+  target_cpu_utilization: 0.6
+
+# Instance configuration
+instance_class: F2
+
+# Network settings
+network:
+  session_affinity: true
+
+# Health check configuration
+readiness_check:
+  path: "/health"
+  check_interval_sec: 5
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 2
+  app_start_timeout_sec: 300
+
+liveness_check:
+  path: "/health"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 4
+  success_threshold: 2
+
+# Files to skip during deployment
+skip_files:
+  - node_modules/
+  - .git/
+  - .gitignore
+  - README.md
+  - .env
+  - .env.*
+  - credentials_*.json
+  - .wwebjs_auth/
+  - .wwebjs_cache/
+  - logs/
+  - coverage/
+  - test/
+  - tests/
+  - "*.test.js"
+  - "*.spec.js"
