@@ -164,11 +164,6 @@ const createClient = () => {
 
 // Configuração robusta do cliente WhatsApp para produção
 let client = createClient();
-    webVersionCache: {
-        type: 'remote',
-        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
-    }
-});
 
 // Função para adicionar um delay (atraso)
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
