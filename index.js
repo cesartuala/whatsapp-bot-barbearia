@@ -23,17 +23,39 @@ const { blockDate, blockTimeRange } = require('./block');
 // Importa funções de cancelamento do módulo appointmentCancel.js
 const { cancelAppointment, saveCancellationReason, copyRowToCancelled } = require('./appointmentCancel');
 
+// Variáveis de controle de reconexão
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+let isReconnecting = false;
+let isInitialized = false;
+
 // Function to check the connection and try to reconnect if needed
-const checkAndReconnect = () => {
-  try {
-    if (!client.authStrategy || !client.authStrategy.loggedIn) {
-      console.log("checkAndReconnect: Cliente não está logado, tentando reconectar...");
-      reconnectClient();
+const checkAndReconnect = async () => {
+    if (isReconnecting) {
+        console.log('⏳ Reconexão já em andamento...');
+        return;
     }
-  } catch (error) {
-    console.error("checkAndReconnect: Erro ao verificar conexão:", error);
-    reconnectClient();
-  }
+
+    try {
+        isReconnecting = true;
+        console.log('🔄 Verificando status da conexão...');
+        
+        const clientState = await client.getState();
+        console.log(`📊 Estado atual: ${clientState}`);
+        
+        if (clientState !== 'CONNECTED') {
+            console.log('❌ Cliente não conectado, iniciando processo de reconexão...');
+            await reconnectClient();
+        } else {
+            console.log('✅ Cliente conectado normalmente');
+            reconnectAttempts = 0;
+        }
+    } catch (error) {
+        console.error('❌ Erro ao verificar conexão:', error.message);
+        await reconnectClient();
+    } finally {
+        isReconnecting = false;
+    }
 };
 
 // Estado global para rastrear informações dos clientes
@@ -41,36 +63,101 @@ const state = {};
 
 // Function to reconnect the client
 const reconnectClient = async () => {
-  try {
-    await client.destroy();
-    await client.initialize();
-  } catch (error) {
-    console.error("reconnectClient: Failed to reconnect:", error);
-  }
+    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        console.log(`❌ Máximo de tentativas de reconexão atingido (${MAX_RECONNECT_ATTEMPTS})`);
+        console.log('🔄 Reiniciando aplicação em 60 segundos...');
+        setTimeout(() => {
+            process.exit(1);
+        }, 60000);
+        return;
+    }
+
+    reconnectAttempts++;
+    console.log(`🔄 Tentativa de reconexão ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`);
+
+    try {
+        // Destrói cliente atual
+        if (client && isInitialized) {
+            await client.destroy();
+            console.log('🗑️ Cliente anterior destruído');
+            isInitialized = false;
+        }
+
+        // Aguarda antes de tentar reconectar
+        const waitTime = Math.min(30000 * reconnectAttempts, 300000); // Max 5 minutos
+        console.log(`⏱️ Aguardando ${waitTime/1000}s antes de reconectar...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+
+        // Reinicializa cliente
+        console.log('🚀 Reinicializando cliente...');
+        await client.initialize();
+
+    } catch (error) {
+        console.error(`❌ Erro na tentativa ${reconnectAttempts}:`, error.message);
+        setTimeout(reconnectClient, 10000);
+    }
 };
-// Inicializa o cliente do WhatsApp com suporte à persistência de sessão
+// Configuração robusta do cliente WhatsApp para produção
 const client = new Client({
-  authStrategy: new LocalAuth(),
-  puppeteer: {
-    headless: true,
-    executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', // Caminho padrão do Chrome no Windows
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox"
-    ]
-  }
+    authStrategy: new LocalAuth({
+        clientId: "whatsapp-bot-barbearia",
+        dataPath: "./whatsapp-session"
+    }),
+    puppeteer: {
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding',
+            '--override-plugin-power-saver-for-testing=never',
+            '--disable-extensions-http-throttling',
+            '--disable-features=TranslateUI',
+            '--disable-ipc-flooding-protection'
+        ],
+        executablePath: process.env.NODE_ENV === 'production' ? '/usr/bin/google-chrome-stable' : 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+    },
+    webVersionCache: {
+        type: 'remote',
+        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
+    }
 });
 
 // Função para adicionar um delay (atraso)
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-// Função para enviar mensagem com delay
+// Função melhorada para enviar mensagens com delay e tratamento de erro
 async function sendMessageWithDelay(chatId, message, delayMs = 2000) {
   try {
+    if (!client || !isInitialized) {
+      console.log('⚠️ Cliente não inicializado, tentando reconectar...');
+      await checkAndReconnect();
+      return;
+    }
+
+    const clientState = await client.getState();
+    if (clientState !== 'CONNECTED') {
+      console.log('⚠️ Cliente não conectado, adiando mensagem...');
+      setTimeout(() => sendMessageWithDelay(chatId, message, delayMs), 5000);
+      return;
+    }
+
+    await delay(delayMs);
     await client.sendMessage(chatId, message);
-    await delay(delayMs); // Espera por `delayMs` milissegundos antes de continuar
+    console.log(`📤 Mensagem enviada para ${chatId}: ${message.substring(0, 50)}...`);
   } catch (error) {
-    console.error("Erro ao enviar mensagem com delay:", error);
+    console.error('❌ Erro ao enviar mensagem:', error.message);
+    if (error.message.includes('Session closed') || error.message.includes('Protocol error')) {
+      console.log('🔄 Sessão perdida, tentando reconectar...');
+      setTimeout(checkAndReconnect, 2000);
+    }
   }
 }
 
@@ -380,15 +467,63 @@ client.on("auth_failure", (msg) => {
   console.error("client.on('auth_failure'): Falha na autenticação:", msg);
   checkAndReconnect();
 });
-// Evento para gerar o QR Code
+// Event listeners robustos para produção
 client.on("qr", (qr) => {
-  console.log("QR Code gerado! Escaneie com o WhatsApp para conectar.");
+  console.log('📱 Novo QR Code gerado');
   qrcode.generate(qr, { small: true });
+  console.log('✅ QR Code exibido no terminal. Escaneie com seu WhatsApp.');
+  console.log('📋 Dica: Se estiver em um servidor, copie o QR do terminal para escanear');
 });
 
 // Evento para indicar que o cliente está pronto
 client.on("ready", () => {
-  console.log("✅ WhatsApp conectado com sucesso!");
+  console.log("🟢 WhatsApp conectado e pronto!");
+  console.log("📱 Bot da Barbearia Santana está funcionando!");
+  reconnectAttempts = 0;
+  isReconnecting = false;
+  isInitialized = true;
+});
+
+client.on("authenticated", () => {
+  console.log("🔐 Autenticação bem-sucedida!");
+});
+
+client.on("auth_failure", (msg) => {
+  console.error("❌ Falha na autenticação:", msg);
+  setTimeout(() => {
+    console.log('🔄 Tentando reautenticar...');
+    if (!isReconnecting) {
+      client.initialize();
+    }
+  }, 10000);
+});
+
+client.on("disconnected", async (reason) => {
+  console.log(`🔴 WhatsApp desconectado: ${reason}`);
+  isInitialized = false;
+  
+  if (reason === 'LOGOUT') {
+    console.log('⚠️ Logout detectado - sessão foi invalidada');
+    console.log('🗑️ Limpando dados de sessão...');
+    
+    // Remove arquivos de sessão
+    const fs = require('fs');
+    const path = require('path');
+    const sessionPath = path.join(__dirname, 'whatsapp-session');
+    
+    try {
+      if (fs.existsSync(sessionPath)) {
+        fs.rmSync(sessionPath, { recursive: true, force: true });
+        console.log('🗑️ Sessão limpa. Novo QR Code será necessário.');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao limpar sessão:', error.message);
+    }
+    
+    reconnectAttempts = 0; // Reset tentativas para logout
+  }
+  
+  setTimeout(checkAndReconnect, 5000);
 });
 
 // Evento para lidar com mensagens recebidas
@@ -1274,8 +1409,29 @@ Podemos confirmar o agendamento?
   }
 });
 
-// Inicializa o cliente do WhatsApp
-client.initialize();
+// Função para inicializar o bot com Google Sheets
+async function startBot() {
+  try {
+    console.log('🚀 Iniciando WhatsApp Bot da Barbearia...');
+    
+    // Importa funções do Google Sheets
+    const { initializeGoogleSheets } = require('./googleSheets');
+    await initializeGoogleSheets();
+    
+    console.log('📱 Inicializando cliente WhatsApp...');
+    await client.initialize();
+    
+    // Verifica conexão a cada 2 minutos
+    setInterval(checkAndReconnect, 120000);
+    
+  } catch (error) {
+    console.error("❌ Erro ao inicializar bot:", error);
+    process.exit(1);
+  }
+}
+
+// Inicializa o bot
+startBot();
 
 // Função para verificar se deve enviar lembrete (implementação básica)
 function shouldSendReminder() {

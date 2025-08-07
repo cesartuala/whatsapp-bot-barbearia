@@ -5,12 +5,18 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "monitor": "node monitor.js",
     "dev": "nodemon index.js",
     "test": "node test-suite.js",
     "deploy": "gcloud app deploy",
     "deploy-staging": "gcloud app deploy --version staging --no-promote",
     "logs": "gcloud app logs tail -s default",
-    "health": "node health-check.js"
+    "health": "node health-check.js",
+    "restart": "pkill -f 'node index.js' && npm run monitor",
+    "pm2-start": "pm2 start monitor.js --name whatsapp-bot",
+    "pm2-stop": "pm2 stop whatsapp-bot",
+    "pm2-restart": "pm2 restart whatsapp-bot",
+    "pm2-logs": "pm2 logs whatsapp-bot"
   },
   "engines": {
     "node": ">=18.0.0",

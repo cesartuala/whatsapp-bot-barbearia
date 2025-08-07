@@ -1,20 +1,74 @@
 
 // Módulo de integração com Google Sheets
 const { google } = require('googleapis');
-const { SPREADSHEET_ID } = require('./config');
-
-// Autenticação Google API
-const auth = new google.auth.GoogleAuth({
-  keyFile: './credentials_sheet.json',
-  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-});
 
 let sheets;
-try {
-  sheets = google.sheets({ version: 'v4', auth });
-} catch (error) {
-  console.error('googleSheets.js: Erro ao autenticar com a Google API:', error);
-  throw error;
+let SPREADSHEET_ID;
+
+async function initializeGoogleSheets() {
+  try {
+    console.log('🔐 Inicializando Google Sheets...');
+    
+    // Verifica se está em ambiente de produção (Google Cloud)
+    if (process.env.GOOGLE_CREDENTIALS_BASE64 && process.env.SPREADSHEET_ID) {
+      console.log('☁️ Detectado ambiente de produção - usando variáveis de ambiente');
+      
+      // Pega as credenciais das variáveis de ambiente
+      const credentialsBase64 = process.env.GOOGLE_CREDENTIALS_BASE64;
+      SPREADSHEET_ID = process.env.SPREADSHEET_ID;
+      
+      // Decodifica as credenciais
+      const credentialsJson = Buffer.from(credentialsBase64, 'base64').toString();
+      const credentials = JSON.parse(credentialsJson);
+      
+      // Configura autenticação
+      const auth = new google.auth.GoogleAuth({
+        credentials: credentials,
+        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+      });
+      
+      sheets = google.sheets({ version: "v4", auth });
+      
+    } else {
+      console.log('💻 Detectado ambiente de desenvolvimento - usando arquivo local');
+      
+      // Ambiente de desenvolvimento - usa arquivo local
+      const { SPREADSHEET_ID: localSpreadsheetId } = require('./config');
+      SPREADSHEET_ID = localSpreadsheetId;
+      
+      const auth = new google.auth.GoogleAuth({
+        keyFile: "./credentials_sheet.json",
+        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+      });
+      
+      sheets = google.sheets({ version: "v4", auth });
+    }
+    
+    console.log("✅ Google Sheets inicializado com sucesso!");
+    console.log(`📊 Usando planilha: ${SPREADSHEET_ID}`);
+    
+    // Teste de conectividade
+    await testConnection();
+    
+    return { sheets, SPREADSHEET_ID };
+  } catch (error) {
+    console.error("❌ Erro ao inicializar Google Sheets:", error);
+    throw error;
+  }
+}
+
+// Função para testar a conexão com a planilha
+async function testConnection() {
+  try {
+    console.log('🧪 Testando conexão com a planilha...');
+    const response = await sheets.spreadsheets.get({
+      spreadsheetId: SPREADSHEET_ID,
+    });
+    console.log(`✅ Conexão OK - Planilha: "${response.data.properties.title}"`);
+  } catch (error) {
+    console.error('❌ Erro no teste de conexão:', error.message);
+    throw error;
+  }
 }
 
 // Função para buscar a descrição do serviço na planilha
@@ -105,9 +159,11 @@ async function getSheetId(sheetName) {
 }
 
 module.exports = {
-  sheets,
+  initializeGoogleSheets,
   getServiceDescription,
   checkAvailability,
   getLastRowIndex,
   getSheetId,
+  get sheets() { return sheets; },
+  get SPREADSHEET_ID() { return SPREADSHEET_ID; }
 };
