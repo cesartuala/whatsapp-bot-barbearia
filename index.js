@@ -120,11 +120,31 @@ const client = new Client({
             '--override-plugin-power-saver-for-testing=never',
             '--disable-extensions-http-throttling',
             '--disable-features=TranslateUI',
-            '--disable-ipc-flooding-protection'
+            '--disable-ipc-flooding-protection',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--disable-blink-features=AutomationControlled',
+            '--no-default-browser-check',
+            '--disable-default-apps',
+            '--disable-extensions',
+            '--disable-plugins',
+            '--disable-sync',
+            '--disable-translate',
+            '--hide-scrollbars',
+            '--mute-audio',
+            '--disable-background-networking',
+            '--disable-background-timer-throttling',
+            '--disable-device-discovery-notifications',
+            '--disable-web-security',
+            '--allow-running-insecure-content'
         ],
         executablePath: process.platform === 'win32' ? 
             'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : 
-            '/usr/bin/google-chrome-stable'
+            '/usr/bin/google-chrome-stable',
+        timeout: 60000,
+        handleSIGINT: false,
+        handleSIGTERM: false,
+        handleSIGHUP: false
     },
     webVersionCache: {
         type: 'remote',
