@@ -10,17 +10,19 @@ const client = new Client({
         dataPath: "./test-session"
     }),
     puppeteer: {
-        headless: true,
+        headless: "new", // Usar novo headless mode
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
             '--single-process',
-            '--no-zygote'
+            '--no-zygote',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor'
         ],
         executablePath: '/usr/bin/google-chrome-stable',
-        timeout: 0
+        timeout: 60000
     }
 });
 

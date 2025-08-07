@@ -8,7 +8,7 @@ async function testPuppeteer() {
         console.log('📱 Iniciando browser...');
         
         const browser = await puppeteer.launch({
-            headless: true,
+            headless: "new", // Usar novo headless mode
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -16,9 +16,11 @@ async function testPuppeteer() {
                 '--disable-gpu',
                 '--single-process',
                 '--no-zygote',
-                '--disable-web-security'
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor'
             ],
-            executablePath: '/usr/bin/google-chrome-stable'
+            executablePath: '/usr/bin/google-chrome-stable',
+            timeout: 30000
         });
         
         console.log('✅ Browser iniciado com sucesso!');
@@ -26,7 +28,14 @@ async function testPuppeteer() {
         const page = await browser.newPage();
         console.log('✅ Nova página criada!');
         
-        await page.goto('https://www.google.com');
+        // Aguardar um pouco antes de navegar
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        console.log('🌐 Navegando para Google...');
+        await page.goto('https://www.google.com', { 
+            waitUntil: 'networkidle2',
+            timeout: 30000 
+        });
         console.log('✅ Página carregada com sucesso!');
         
         const title = await page.title();

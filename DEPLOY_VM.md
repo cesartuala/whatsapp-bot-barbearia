@@ -226,10 +226,48 @@ npm install
 google-chrome --version
 node --version
 
-# Limpar sessão
+# Verificar se Chrome está funcionando
+google-chrome --headless --disable-gpu --dump-dom https://www.google.com > /dev/null
+
+# Se der erro, reinstalar Chrome
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+sudo apt update
+sudo apt install -y google-chrome-stable
+
+# Instalar dependências extras do Puppeteer
+sudo apt install -y libnss3 libatk-bridge2.0-0 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libxss1 libasound2
+
+# Limpar sessão e tentar novamente
 rm -rf whatsapp-session/
 
-# Reiniciar com logs
+# Reiniciar com logs detalhados
+DEBUG=puppeteer:* node index.js
+```
+
+### Erro "Protocol error" ou "Session closed"
+```bash
+# Este erro geralmente indica problema com Chrome/Puppeteer
+
+# 1. Verificar processos antigos
+ps aux | grep chrome
+sudo pkill -f chrome
+
+# 2. Limpar cache do Puppeteer
+rm -rf ~/.cache/puppeteer
+rm -rf node_modules/.cache
+
+# 3. Reinstalar dependências
+npm cache clean --force
+npm install
+
+# 4. Testar Chrome manualmente
+google-chrome --version
+google-chrome --headless --disable-gpu --virtual-time-budget=1000 --dump-dom https://www.google.com
+
+# 5. Se ainda não funcionar, usar modo compatibilidade
+export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+export PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 node index.js
 ```
 
