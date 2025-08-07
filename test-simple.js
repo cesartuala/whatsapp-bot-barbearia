@@ -19,10 +19,19 @@ const client = new Client({
             '--single-process',
             '--no-zygote',
             '--disable-web-security',
-            '--disable-features=VizDisplayCompositor'
+            '--disable-features=VizDisplayCompositor',
+            '--disable-extensions',
+            '--disable-plugins',
+            '--disable-default-apps',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding'
         ],
         executablePath: '/usr/bin/google-chrome-stable',
-        timeout: 60000
+        timeout: 90000,
+        handleSIGINT: false,
+        handleSIGTERM: false,
+        handleSIGHUP: false
     }
 });
 
@@ -38,6 +47,10 @@ client.on('ready', () => {
     console.log('🎉 Bot funcionando perfeitamente!');
 });
 
+client.on('authenticated', () => {
+    console.log('✅ Autenticação bem-sucedida!');
+});
+
 client.on('auth_failure', (session) => {
     console.log('❌ Falha na autenticação:', session);
 });
@@ -46,12 +59,30 @@ client.on('disconnected', (reason) => {
     console.log('🔌 Cliente desconectado:', reason);
 });
 
+client.on('loading_screen', (percent, message) => {
+    console.log(`⏳ Carregando: ${percent}% - ${message}`);
+});
+
 async function startTest() {
     try {
         console.log('🚀 Iniciando teste...');
+        
+        // Aguardar um pouco antes de inicializar
+        console.log('⏳ Aguardando 3 segundos antes de inicializar...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
         await client.initialize();
+        
+        // Manter o processo ativo por mais tempo
+        console.log('⏳ Aguardando conexão por 60 segundos...');
+        setTimeout(() => {
+            console.log('⏰ Tempo limite atingido. Encerrando teste...');
+            process.exit(0);
+        }, 60000);
+        
     } catch (error) {
         console.error('❌ Erro no teste:', error.message);
+        console.error('Stack:', error.stack);
         process.exit(1);
     }
 }
