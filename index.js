@@ -97,55 +97,73 @@ const reconnectClient = async () => {
         setTimeout(reconnectClient, 10000);
     }
 };
+// Função para criar cliente com retry automático
+const createClient = () => {
+    return new Client({
+        authStrategy: new LocalAuth({
+            clientId: "whatsapp-bot-barbearia",
+            dataPath: "./whatsapp-session"
+        }),
+        puppeteer: {
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process',
+                '--disable-gpu',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding',
+                '--override-plugin-power-saver-for-testing=never',
+                '--disable-extensions-http-throttling',
+                '--disable-features=TranslateUI',
+                '--disable-ipc-flooding-protection',
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor',
+                '--disable-blink-features=AutomationControlled',
+                '--no-default-browser-check',
+                '--disable-default-apps',
+                '--disable-extensions',
+                '--disable-plugins',
+                '--disable-sync',
+                '--disable-translate',
+                '--hide-scrollbars',
+                '--mute-audio',
+                '--disable-background-networking',
+                '--disable-device-discovery-notifications',
+                '--allow-running-insecure-content',
+                '--disable-features=Translate',
+                '--disable-web-security',
+                '--user-data-dir=/tmp/chrome-user-data',
+                '--disable-software-rasterizer'
+            ],
+            executablePath: process.platform === 'win32' ? 
+                'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : 
+                '/usr/bin/google-chrome-stable',
+            timeout: 120000, // 2 minutos
+            handleSIGINT: false,
+            handleSIGTERM: false,
+            handleSIGHUP: false,
+            slowMo: 100 // Adiciona delay entre ações
+        },
+        webVersionCache: {
+            type: 'remote',
+            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
+        },
+        authTimeoutMs: 60000, // 1 minuto para auth
+        qrMaxRetries: 5,
+        restartOnAuthFail: true,
+        takeoverOnConflict: true,
+        takeoverTimeoutMs: 30000
+    });
+};
+
 // Configuração robusta do cliente WhatsApp para produção
-const client = new Client({
-    authStrategy: new LocalAuth({
-        clientId: "whatsapp-bot-barbearia",
-        dataPath: "./whatsapp-session"
-    }),
-    puppeteer: {
-        headless: true,
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--single-process',
-            '--disable-gpu',
-            '--disable-background-timer-throttling',
-            '--disable-backgrounding-occluded-windows',
-            '--disable-renderer-backgrounding',
-            '--override-plugin-power-saver-for-testing=never',
-            '--disable-extensions-http-throttling',
-            '--disable-features=TranslateUI',
-            '--disable-ipc-flooding-protection',
-            '--disable-web-security',
-            '--disable-features=VizDisplayCompositor',
-            '--disable-blink-features=AutomationControlled',
-            '--no-default-browser-check',
-            '--disable-default-apps',
-            '--disable-extensions',
-            '--disable-plugins',
-            '--disable-sync',
-            '--disable-translate',
-            '--hide-scrollbars',
-            '--mute-audio',
-            '--disable-background-networking',
-            '--disable-background-timer-throttling',
-            '--disable-device-discovery-notifications',
-            '--disable-web-security',
-            '--allow-running-insecure-content'
-        ],
-        executablePath: process.platform === 'win32' ? 
-            'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : 
-            '/usr/bin/google-chrome-stable',
-        timeout: 60000,
-        handleSIGINT: false,
-        handleSIGTERM: false,
-        handleSIGHUP: false
-    },
+let client = createClient();
     webVersionCache: {
         type: 'remote',
         remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
@@ -1431,8 +1449,10 @@ Podemos confirmar o agendamento?
   }
 });
 
-// Função para inicializar o bot com Google Sheets
-async function startBot() {
+// Função para inicializar o bot com Google Sheets e retry automático
+async function startBot(retryCount = 0) {
+  const MAX_RETRIES = 3;
+  
   try {
     console.log('🚀 Iniciando WhatsApp Bot da Barbearia...');
     
@@ -1441,14 +1461,59 @@ async function startBot() {
     await initializeGoogleSheets();
     
     console.log('📱 Inicializando cliente WhatsApp...');
+    
+    // Cleanup de processos antigos
+    try {
+      if (client && client.pupPage) {
+        await client.destroy();
+      }
+    } catch (e) {
+      console.log('🧹 Limpando recursos antigos...');
+    }
+    
+    // Recria o cliente
+    client = createClient();
+    
+    // Aguarda um pouco antes de inicializar
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
     await client.initialize();
     
     // Verifica conexão a cada 2 minutos
     setInterval(checkAndReconnect, 120000);
     
   } catch (error) {
-    console.error("❌ Erro ao inicializar bot:", error);
-    process.exit(1);
+    console.error(`❌ Erro ao inicializar bot (tentativa ${retryCount + 1}/${MAX_RETRIES}):`, error.message);
+    
+    if (retryCount < MAX_RETRIES - 1) {
+      console.log(`🔄 Tentando novamente em 10 segundos...`);
+      
+      // Limpar sessão se for erro de protocol
+      if (error.message.includes('Protocol error') || error.message.includes('Session closed')) {
+        console.log('🧹 Limpando sessão corrompida...');
+        const fs = require('fs');
+        const path = require('path');
+        try {
+          if (fs.existsSync('./whatsapp-session')) {
+            fs.rmSync('./whatsapp-session', { recursive: true, force: true });
+          }
+        } catch (e) {
+          console.log('⚠️ Não foi possível limpar sessão automaticamente');
+        }
+      }
+      
+      setTimeout(() => {
+        startBot(retryCount + 1);
+      }, 10000);
+    } else {
+      console.error("💥 Falha crítica: Não foi possível inicializar o bot após várias tentativas");
+      console.log("🔧 Tente executar manualmente:");
+      console.log("   1. rm -rf whatsapp-session/");
+      console.log("   2. export DISPLAY=:99");
+      console.log("   3. sudo Xvfb :99 -screen 0 1024x768x24 &");
+      console.log("   4. node index.js");
+      process.exit(1);
+    }
   }
 }
 
