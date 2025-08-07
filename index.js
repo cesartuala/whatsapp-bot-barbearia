@@ -122,7 +122,9 @@ const client = new Client({
             '--disable-features=TranslateUI',
             '--disable-ipc-flooding-protection'
         ],
-        executablePath: process.env.NODE_ENV === 'production' ? '/usr/bin/google-chrome-stable' : 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+        executablePath: process.platform === 'win32' ? 
+            'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : 
+            '/usr/bin/google-chrome-stable'
     },
     webVersionCache: {
         type: 'remote',

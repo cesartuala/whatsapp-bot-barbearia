@@ -24,7 +24,34 @@ curl -sSL https://raw.githubusercontent.com/cesartuala/whatsapp-bot-barbearia/ma
 
 ## 📦 **2. Deploy do Projeto**
 
-### Clonar repositório
+### Limpeza completa da VM (múltiplas pastas aninhadas)
+```bash
+# Parar todos os processos do bot
+pm2 stop all 2>/dev/null || true
+pm2 kill 2>/dev/null || true
+pkill -f node 2>/dev/null || true
+
+# Voltar para o diretório home
+cd ~
+
+# Verificar a bagunça atual
+pwd
+ls -la
+
+# REMOVER TUDO - todas as pastas do projeto
+rm -rf whatsapp-bot-barbearia*
+rm -rf */whatsapp-bot-barbearia*
+rm -rf .pm2/
+rm -rf .npm/
+rm -rf node_modules/
+rm -rf *.log
+
+# Verificar se limpou tudo
+ls -la
+# Deve mostrar apenas arquivos do sistema (.bashrc, .profile, etc)
+```
+
+### Clonar repositório (versão limpa)
 ```bash
 git clone https://github.com/cesartuala/whatsapp-bot-barbearia.git
 cd whatsapp-bot-barbearia
@@ -166,6 +193,32 @@ pm2 install pm2-logrotate
 ```
 
 ## 🐛 **6. Solução de Problemas**
+
+### Limpeza total da VM (múltiplas pastas/arquivos)
+```bash
+# Se você tem várias pastas do projeto ou arquivos antigos:
+
+# 1. Parar TODOS os processos
+sudo pkill -f node
+sudo pkill -f npm
+pm2 kill 2>/dev/null || true
+
+# 2. Ir para home e limpar tudo
+cd ~
+sudo rm -rf whatsapp-bot-barbearia*/  # Remove todas as pastas do projeto
+sudo rm -rf node_modules/             # Remove node_modules antigos
+sudo rm -rf *.log                     # Remove logs antigos
+sudo rm -rf .pm2/                     # Remove configurações PM2
+sudo rm -rf .npm/                     # Remove cache npm
+
+# 3. Verificar se limpou
+ls -la
+
+# 4. Recomeçar limpo
+git clone https://github.com/cesartuala/whatsapp-bot-barbearia.git
+cd whatsapp-bot-barbearia
+npm install
+```
 
 ### Bot não conecta
 ```bash
