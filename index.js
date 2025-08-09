@@ -143,7 +143,7 @@ const createClient = () => {
             ],
             executablePath: process.platform === 'win32' ? 
                 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : 
-                '/usr/bin/google-chrome-stable',
+                '/usr/bin/chromium', // Usar Chromium no Linux (mais compatível)
             timeout: 120000, // 2 minutos
             handleSIGINT: false,
             handleSIGTERM: false,
