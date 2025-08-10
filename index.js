@@ -120,6 +120,9 @@ const createClient = () => {
                 '--no-first-run',
                 '--no-default-browser-check'
             ],
+            executablePath: process.platform === 'win32' ? 
+                undefined : // Windows usa Chrome padrão
+                '/usr/bin/chromium-browser', // Linux usa Chromium
             timeout: 60000
         },
         authTimeoutMs: 60000, // 1 minuto para auth

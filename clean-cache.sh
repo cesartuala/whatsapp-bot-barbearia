@@ -7,6 +7,7 @@ echo "========================="
 # Parar processos
 pkill -f "node index.js" 2>/dev/null || true
 pkill -f chromium 2>/dev/null || true
+pkill -f chromium-browser 2>/dev/null || true
 sleep 2
 
 # Limpar sessões WhatsApp
