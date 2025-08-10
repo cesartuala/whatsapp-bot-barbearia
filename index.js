@@ -111,18 +111,12 @@ const createClient = () => {
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-gpu',
-                '--disable-software-rasterizer',
-                '--disable-background-timer-throttling',
-                '--disable-backgrounding-occluded-windows',
-                '--disable-renderer-backgrounding',
-                '--disable-features=TranslateUI',
-                '--disable-web-security',
-                '--no-first-run',
-                '--no-default-browser-check'
+                '--single-process',
+                '--no-zygote'
             ],
             executablePath: process.platform === 'win32' ? 
                 undefined : // Windows usa Chrome padrão
-                '/usr/bin/chromium', // Linux usa Chromium
+                '/usr/bin/chromium', // Linux usa Chromium (funcionou no teste!)
             timeout: 60000
         },
         authTimeoutMs: 60000, // 1 minuto para auth
