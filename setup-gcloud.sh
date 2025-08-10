@@ -5,12 +5,12 @@ echo "🐧 PREPARANDO AMBIENTE GOOGLE CLOUD"
 echo "===================================="
 
 # Verificar se Chromium está instalado
-if ! command -v chromium-browser &> /dev/null; then
+if ! command -v chromium &> /dev/null; then
     echo "📦 Instalando Chromium..."
     sudo apt update
-    sudo apt install -y chromium-browser
+    sudo apt install -y chromium
 else
-    echo "✅ Chromium já instalado: $(which chromium-browser)"
+    echo "✅ Chromium já instalado: $(which chromium)"
 fi
 
 # Verificar se Xvfb está instalado
