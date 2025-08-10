@@ -110,54 +110,20 @@ const createClient = () => {
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--no-first-run',
-                '--no-zygote',
-                '--single-process',
                 '--disable-gpu',
+                '--disable-software-rasterizer',
                 '--disable-background-timer-throttling',
                 '--disable-backgrounding-occluded-windows',
                 '--disable-renderer-backgrounding',
-                '--override-plugin-power-saver-for-testing=never',
-                '--disable-extensions-http-throttling',
                 '--disable-features=TranslateUI',
-                '--disable-ipc-flooding-protection',
                 '--disable-web-security',
-                '--disable-features=VizDisplayCompositor',
-                '--disable-blink-features=AutomationControlled',
-                '--no-default-browser-check',
-                '--disable-default-apps',
-                '--disable-extensions',
-                '--disable-plugins',
-                '--disable-sync',
-                '--disable-translate',
-                '--hide-scrollbars',
-                '--mute-audio',
-                '--disable-background-networking',
-                '--disable-device-discovery-notifications',
-                '--allow-running-insecure-content',
-                '--disable-features=Translate',
-                '--disable-web-security',
-                '--user-data-dir=/tmp/chrome-user-data',
-                '--disable-software-rasterizer'
+                '--no-first-run',
+                '--no-default-browser-check'
             ],
-            executablePath: process.platform === 'win32' ? 
-                'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : 
-                '/usr/bin/chromium', // Usar Chromium no Linux (mais compatível)
-            timeout: 120000, // 2 minutos
-            handleSIGINT: false,
-            handleSIGTERM: false,
-            handleSIGHUP: false,
-            slowMo: 100 // Adiciona delay entre ações
-        },
-        webVersionCache: {
-            type: 'remote',
-            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html'
+            timeout: 60000
         },
         authTimeoutMs: 60000, // 1 minuto para auth
         qrMaxRetries: 5,
-        restartOnAuthFail: true,
-        takeoverOnConflict: true,
         takeoverTimeoutMs: 30000
     });
 };
