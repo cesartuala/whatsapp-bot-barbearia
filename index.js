@@ -108,24 +108,15 @@ const createClient = () => {
             headless: true,
             args: [
                 '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--no-first-run',
-                '--no-zygote',
-                '--disable-gpu',
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor'
+                '--disable-setuid-sandbox'
             ],
-            executablePath: process.platform === 'win32' ? 
-                undefined : // Windows usa Chrome padrão
-                '/usr/bin/chromium', // Linux usa Chromium
+            executablePath: '/usr/bin/chromium',
             timeout: 120000,
             userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
         },
-        authTimeoutMs: 60000, // 1 minuto para auth
-        qrMaxRetries: 5,
-        takeoverTimeoutMs: 30000
+        authTimeoutMs: 120000, // 2 minutos para auth
+        qrMaxRetries: 3,
+        takeoverTimeoutMs: 60000
     });
 };
 
@@ -1441,8 +1432,8 @@ async function startBot(retryCount = 0) {
     
     await client.initialize();
     
-    // Verifica conexão a cada 2 minutos
-    setInterval(checkAndReconnect, 120000);
+    // Verifica conexão a cada 5 minutos (reduzido para evitar erros)
+    // setInterval(checkAndReconnect, 300000);
     
   } catch (error) {
     console.error(`❌ Erro ao inicializar bot (tentativa ${retryCount + 1}/${MAX_RETRIES}):`, error.message);
