@@ -99,6 +99,16 @@ const reconnectClient = async () => {
 };
 // Função para criar cliente com retry automático
 const createClient = () => {
+    const executablePath = '/usr/bin/chromium';
+    
+    // Verificar se o executável existe
+    const fs = require('fs');
+    if (fs.existsSync(executablePath)) {
+        console.log(`✅ Chromium encontrado em: ${executablePath}`);
+    } else {
+        console.log(`❌ Chromium NÃO encontrado em: ${executablePath}`);
+    }
+    
     return new Client({
         authStrategy: new LocalAuth({
             clientId: "whatsapp-bot-barbearia",
@@ -110,7 +120,7 @@ const createClient = () => {
                 '--no-sandbox',
                 '--disable-setuid-sandbox'
             ],
-            executablePath: '/usr/bin/chromium',
+            executablePath: executablePath,
             timeout: 60000,
             userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
         },
@@ -463,6 +473,7 @@ client.on("auth_failure", (msg) => {
 // Event listeners robustos para produção
 client.on("qr", (qr) => {
   console.log('📱 Novo QR Code gerado');
+  console.log('🌐 Navegador Chromium foi aberto com sucesso!');
   qrcode.generate(qr, { small: true });
   console.log('✅ QR Code exibido no terminal. Escaneie com seu WhatsApp.');
   console.log('📋 Dica: Se estiver em um servidor, copie o QR do terminal para escanear');
@@ -475,6 +486,10 @@ client.on("ready", () => {
   reconnectAttempts = 0;
   isReconnecting = false;
   isInitialized = true;
+});
+
+client.on("loading_screen", (percent, message) => {
+  console.log(`🔄 Carregando WhatsApp: ${percent}% - ${message}`);
 });
 
 client.on("authenticated", () => {
@@ -1434,6 +1449,7 @@ async function startBot(retryCount = 0) {
     await new Promise(resolve => setTimeout(resolve, 3000));
     
     console.log('🚀 Executando client.initialize()...');
+    console.log('🌐 Tentando abrir Chromium via Puppeteer...');
     await client.initialize();
     console.log('✅ Cliente inicializado com sucesso!');
     
