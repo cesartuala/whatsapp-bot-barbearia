@@ -99,62 +99,17 @@ const reconnectClient = async () => {
 };
 // Função para criar cliente com retry automático
 const createClient = () => {
-    // Testar múltiplos navegadores
-    const browsersToTry = [
-        { name: 'Firefox', path: '/usr/bin/firefox' },
-        { name: 'Google Chrome', path: '/usr/bin/google-chrome' },
-        { name: 'Chromium', path: '/usr/bin/chromium' },
-        { name: 'Chrome Stable', path: '/usr/bin/google-chrome-stable' }
-    ];
-    
-    const fs = require('fs');
-    let selectedBrowser = null;
-    
-    for (const browser of browsersToTry) {
-        if (fs.existsSync(browser.path)) {
-            selectedBrowser = browser;
-            console.log(`✅ ${browser.name} encontrado em: ${browser.path}`);
-            break;
-        } else {
-            console.log(`❌ ${browser.name} NÃO encontrado em: ${browser.path}`);
-        }
-    }
-    
-    if (!selectedBrowser) {
-        console.log('❌ Nenhum navegador encontrado!');
-        return null;
-    }
-    
-    console.log(`🚀 Usando navegador: ${selectedBrowser.name}`);
+    console.log('🔧 Criando cliente com configuração simplificada...');
     
     return new Client({
         authStrategy: new LocalAuth({
-            clientId: "whatsapp-bot-barbearia",
-            dataPath: "./whatsapp-session"
+            clientId: "whatsapp-bot-barbearia"
         }),
         puppeteer: {
             headless: true,
-            product: selectedBrowser.name === 'Firefox' ? 'firefox' : 'chrome',
-            args: selectedBrowser.name === 'Firefox' ? [
-                '--no-sandbox',
-                '--disable-setuid-sandbox'
-            ] : [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-extensions',
-                '--disable-plugins',
-                '--disable-background-timer-throttling',
-                '--disable-backgrounding-occluded-windows',
-                '--disable-renderer-backgrounding'
-            ],
-            executablePath: selectedBrowser.path,
-            timeout: 90000,
-            userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
-        },
-        authTimeoutMs: 90000,
-        qrMaxRetries: 3,
-        takeoverTimeoutMs: 45000
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            timeout: 60000
+        }
     });
 };
 
