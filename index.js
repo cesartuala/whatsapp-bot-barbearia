@@ -118,15 +118,21 @@ const createClient = () => {
             headless: true,
             args: [
                 '--no-sandbox',
-                '--disable-setuid-sandbox'
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-extensions',
+                '--disable-plugins',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding'
             ],
             executablePath: executablePath,
-            timeout: 60000,
+            timeout: 90000,
             userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
         },
-        authTimeoutMs: 60000, // 1 minuto para auth
+        authTimeoutMs: 90000, // 1.5 minutos para auth
         qrMaxRetries: 3,
-        takeoverTimeoutMs: 30000
+        takeoverTimeoutMs: 45000
     });
 };
 
