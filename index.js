@@ -99,15 +99,33 @@ const reconnectClient = async () => {
 };
 // Função para criar cliente com retry automático
 const createClient = () => {
-    const executablePath = '/usr/bin/chromium';
+    // Testar múltiplos navegadores
+    const browsersToTry = [
+        { name: 'Firefox', path: '/usr/bin/firefox' },
+        { name: 'Google Chrome', path: '/usr/bin/google-chrome' },
+        { name: 'Chromium', path: '/usr/bin/chromium' },
+        { name: 'Chrome Stable', path: '/usr/bin/google-chrome-stable' }
+    ];
     
-    // Verificar se o executável existe
     const fs = require('fs');
-    if (fs.existsSync(executablePath)) {
-        console.log(`✅ Chromium encontrado em: ${executablePath}`);
-    } else {
-        console.log(`❌ Chromium NÃO encontrado em: ${executablePath}`);
+    let selectedBrowser = null;
+    
+    for (const browser of browsersToTry) {
+        if (fs.existsSync(browser.path)) {
+            selectedBrowser = browser;
+            console.log(`✅ ${browser.name} encontrado em: ${browser.path}`);
+            break;
+        } else {
+            console.log(`❌ ${browser.name} NÃO encontrado em: ${browser.path}`);
+        }
     }
+    
+    if (!selectedBrowser) {
+        console.log('❌ Nenhum navegador encontrado!');
+        return null;
+    }
+    
+    console.log(`🚀 Usando navegador: ${selectedBrowser.name}`);
     
     return new Client({
         authStrategy: new LocalAuth({
@@ -116,7 +134,11 @@ const createClient = () => {
         }),
         puppeteer: {
             headless: true,
-            args: [
+            product: selectedBrowser.name === 'Firefox' ? 'firefox' : 'chrome',
+            args: selectedBrowser.name === 'Firefox' ? [
+                '--no-sandbox',
+                '--disable-setuid-sandbox'
+            ] : [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
@@ -126,11 +148,11 @@ const createClient = () => {
                 '--disable-backgrounding-occluded-windows',
                 '--disable-renderer-backgrounding'
             ],
-            executablePath: executablePath,
+            executablePath: selectedBrowser.path,
             timeout: 90000,
             userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
         },
-        authTimeoutMs: 90000, // 1.5 minutos para auth
+        authTimeoutMs: 90000,
         qrMaxRetries: 3,
         takeoverTimeoutMs: 45000
     });
@@ -547,13 +569,24 @@ client.on("disconnected", async (reason) => {
 // Evento para lidar com mensagens recebidas
 client.on("message", async (message) => {
   try {
+    // LOG DETALHADO DE MENSAGENS RECEBIDAS
+    console.log('🔔 =================================');
+    console.log('📨 NOVA MENSAGEM RECEBIDA!');
+    console.log(`👤 De: ${message.from}`);
+    console.log(`💬 Mensagem: "${message.body}"`);
+    console.log(`📱 Tipo: ${message.type}`);
+    console.log(`🕒 Horário: ${new Date().toLocaleString('pt-BR')}`);
+    console.log('🔔 =================================');
+    
     const chatId = message.from;
     // Ignora mensagens vindas de grupos
     if (chatId.includes("@g.us")) {
+      console.log('❌ Ignorando mensagem de grupo');
       return;
     }
     // Ignora mensagens vindas de status (contatos de status)
     if (chatId.includes("@status")) {
+      console.log('❌ Ignorando mensagem de status');
       return;
     }
 
