@@ -109,12 +109,19 @@ const createClient = () => {
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
-                '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--disable-gpu',
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor'
             ],
             executablePath: process.platform === 'win32' ? 
                 undefined : // Windows usa Chrome padrão
                 '/usr/bin/chromium', // Linux usa Chromium
-            timeout: 120000
+            timeout: 120000,
+            userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
         },
         authTimeoutMs: 60000, // 1 minuto para auth
         qrMaxRetries: 5,
