@@ -108,16 +108,12 @@ const createClient = () => {
             headless: true,
             args: [
                 '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-gpu',
-                '--single-process',
-                '--no-zygote'
+                '--disable-setuid-sandbox'
             ],
             executablePath: process.platform === 'win32' ? 
                 undefined : // Windows usa Chrome padrão
-                '/usr/bin/chromium', // Linux usa Chromium (funcionou no teste!)
-            timeout: 60000
+                '/usr/bin/chromium', // Linux usa Chromium (CONFIGURAÇÃO QUE FUNCIONOU!)
+            timeout: 120000
         },
         authTimeoutMs: 60000, // 1 minuto para auth
         qrMaxRetries: 5,
