@@ -111,12 +111,12 @@ const createClient = () => {
                 '--disable-setuid-sandbox'
             ],
             executablePath: '/usr/bin/chromium',
-            timeout: 120000,
+            timeout: 60000,
             userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
         },
-        authTimeoutMs: 120000, // 2 minutos para auth
+        authTimeoutMs: 60000, // 1 minuto para auth
         qrMaxRetries: 3,
-        takeoverTimeoutMs: 60000
+        takeoverTimeoutMs: 30000
     });
 };
 
@@ -1418,6 +1418,7 @@ async function startBot(retryCount = 0) {
     // Cleanup de processos antigos
     try {
       if (client && client.pupPage) {
+        console.log('🧹 Destruindo cliente anterior...');
         await client.destroy();
       }
     } catch (e) {
@@ -1425,12 +1426,16 @@ async function startBot(retryCount = 0) {
     }
     
     // Recria o cliente
+    console.log('🔧 Criando novo cliente...');
     client = createClient();
     
     // Aguarda um pouco antes de inicializar
+    console.log('⏳ Aguardando 3 segundos...');
     await new Promise(resolve => setTimeout(resolve, 3000));
     
+    console.log('🚀 Executando client.initialize()...');
     await client.initialize();
+    console.log('✅ Cliente inicializado com sucesso!');
     
     // Verifica conexão a cada 5 minutos (reduzido para evitar erros)
     // setInterval(checkAndReconnect, 300000);
