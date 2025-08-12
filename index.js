@@ -498,6 +498,10 @@ client.on("loading_screen", (percent, message) => {
   console.log(`🔄 Carregando WhatsApp: ${percent}% - ${message}`);
 });
 
+client.on("change_state", (state) => {
+  console.log(`🔄 Mudança de estado: ${state}`);
+});
+
 client.on("authenticated", () => {
   console.log("🔐 Autenticação bem-sucedida!");
 });
@@ -1456,6 +1460,13 @@ async function startBot(retryCount = 0) {
     
     console.log('🚀 Executando client.initialize()...');
     console.log('🌐 Tentando abrir Chromium via Puppeteer...');
+    
+    // Timeout para debug - se não disparar evento em 10 segundos, mostrar status
+    setTimeout(() => {
+        console.log('⚠️ TIMEOUT DEBUG: 10 segundos sem eventos de QR ou Ready');
+        console.log('🔍 Verificando se WhatsApp está tentando fazer login automático...');
+    }, 10000);
+    
     await client.initialize();
     console.log('✅ Cliente inicializado com sucesso!');
     
