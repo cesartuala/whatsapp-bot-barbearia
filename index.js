@@ -108,11 +108,12 @@ const createClient = () => {
             headless: true,
             args: [
                 '--no-sandbox',
-                '--disable-setuid-sandbox'
+                '--disable-setuid-sandbox',
+                '--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
             ],
             executablePath: process.platform === 'win32' ? 
                 undefined : // Windows usa Chrome padrão
-                '/usr/bin/chromium', // Linux usa Chromium (CONFIGURAÇÃO QUE FUNCIONOU!)
+                '/usr/bin/chromium', // Linux usa Chromium
             timeout: 120000
         },
         authTimeoutMs: 60000, // 1 minuto para auth
