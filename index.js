@@ -506,6 +506,15 @@ const sendAgendaForDate = async (chatId, date) => {
   }
 };
 
+// CAPTURAR ABSOLUTAMENTE TODAS AS MENSAGENS (sem filtros)
+client.on("message_create", async (message) => {
+  console.log('🌟 MESSAGE_CREATE DETECTADO:');
+  console.log(`📱 De: ${message.from}`);
+  console.log(`💬 Conteúdo: "${message.body}"`);
+  console.log(`🤖 É minha: ${message.fromMe ? 'SIM' : 'NÃO'}`);
+  console.log('---');
+});
+
 // Event listener for disconnected event
 client.on("disconnected", (reason) => {
   console.error("client.on('disconnected'): WhatsApp desconectado:", reason);
@@ -534,6 +543,31 @@ client.on('authenticated', () => {
 client.on('ready', async () => {
   console.log("🟢 WhatsApp conectado e pronto!");
   console.log("📱 Bot da Barbearia Santana está funcionando!");
+  
+  // TESTE DE CONECTIVIDADE
+  try {
+    const info = await client.info;
+    console.log(`📞 Número conectado: ${info.wid.user}`);
+    console.log(`👤 Nome: ${info.pushname}`);
+    console.log(`🌐 Plataforma: ${info.platform}`);
+    
+    // TESTE DE RECEBIMENTO DE MENSAGENS
+    console.log('🧪 TESTANDO RECEBIMENTO DE MENSAGENS...');
+    console.log('📱 Envie uma mensagem para este número para testar!');
+    
+    // Timer para mostrar status a cada 30 segundos
+    setInterval(async () => {
+      try {
+        const state = await client.getState();
+        console.log(`🔄 Status atual: ${state} - ${new Date().toLocaleTimeString('pt-BR')}`);
+      } catch (error) {
+        console.log(`❌ Erro ao verificar status: ${error.message}`);
+      }
+    }, 30000);
+    
+  } catch (error) {
+    console.log(`⚠️ Erro ao obter informações: ${error.message}`);
+  }
   
   // SCRIPT ANTI-DETECÇÃO AVANÇADO
   try {
@@ -629,16 +663,28 @@ client.on("disconnected", async (reason) => {
 // Evento para lidar com mensagens recebidas
 client.on("message", async (message) => {
   try {
-    // LOG DETALHADO DE MENSAGENS RECEBIDAS
-    console.log('🔔 =================================');
-    console.log('📨 NOVA MENSAGEM RECEBIDA!');
+    // LOG SUPER DETALHADO DE MENSAGENS RECEBIDAS
+    console.log('🔔 =====================================');
+    console.log('📨 NOVA MENSAGEM DETECTADA!');
+    console.log('🔔 =====================================');
     console.log(`👤 De: ${message.from}`);
-    console.log(`💬 Mensagem: "${message.body}"`);
+    console.log(`💬 Conteúdo: "${message.body}"`);
     console.log(`📱 Tipo: ${message.type}`);
-    console.log(`🕒 Horário: ${new Date().toLocaleString('pt-BR')}`);
-    console.log('🔔 =================================');
+    console.log(`🕒 Timestamp: ${new Date().toLocaleString('pt-BR')}`);
+    console.log(`📞 Chat ID completo: ${message.from}`);
+    console.log(`📍 É grupo: ${message.from.includes('@g.us') ? 'SIM' : 'NÃO'}`);
+    console.log(`� É status: ${message.from.includes('@status') ? 'SIM' : 'NÃO'}`);
+    console.log(`🤖 É de mim: ${message.fromMe ? 'SIM' : 'NÃO'}`);
+    console.log('�🔔 =====================================');
     
     const chatId = message.from;
+    
+    // Ignorar mensagens próprias
+    if (message.fromMe) {
+      console.log('⏭️ Ignorando mensagem própria');
+      return;
+    }
+    
     // Ignora mensagens vindas de grupos
     if (chatId.includes("@g.us")) {
       console.log('❌ Ignorando mensagem de grupo');
@@ -649,6 +695,8 @@ client.on("message", async (message) => {
       console.log('❌ Ignorando mensagem de status');
       return;
     }
+    
+    console.log('✅ MENSAGEM VÁLIDA - Processando...');
 
 
     const clientName = message._data?.notifyName || "Cliente"; // Puxa o nome do cliente automaticamente
