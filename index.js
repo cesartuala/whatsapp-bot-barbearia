@@ -4,6 +4,9 @@ const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const axios = require('axios'); // Certifique-se de ter o Axios instalado
 
+// IMPORTAR CONFIGURAÇÕES STEALTH
+const { getRandomUserAgent, getRandomViewport, getHumanDelay } = require('./stealth-config');
+
 // Importa funções utilitárias e configurações dos módulos
 const { getBrazilDate, normalizeText, normalizeTime, capitalizeFirstLetter, formatDate } = require('./utils');
 const { SPREADSHEET_ID, availableTimes, reminderTimes } = require('./config');
@@ -99,7 +102,14 @@ const reconnectClient = async () => {
 };
 // Função para criar cliente com retry automático
 const createClient = () => {
-    console.log('🔧 Criando cliente com configuração simplificada...');
+    console.log('🔧 Criando cliente com configuração ANTI-DETECÇÃO completa...');
+    
+    // CONFIGURAÇÕES DINÂMICAS STEALTH
+    const randomUserAgent = getRandomUserAgent();
+    const randomViewport = getRandomViewport();
+    
+    console.log(`🎭 User Agent selecionado: ${randomUserAgent.substring(0, 50)}...`);
+    console.log(`📱 Viewport: ${randomViewport.width}x${randomViewport.height}`);
     
     return new Client({
         authStrategy: new LocalAuth({
@@ -107,9 +117,63 @@ const createClient = () => {
         }),
         puppeteer: {
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            timeout: 60000
-        }
+            // ARGS ANTI-DETECÇÃO MÁXIMA
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process',
+                '--disable-gpu',
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor',
+                '--disable-extensions',
+                '--disable-plugins',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding',
+                '--disable-field-trial-config',
+                '--disable-back-forward-cache',
+                '--disable-background-networking',
+                '--disable-client-side-phishing-detection',
+                '--disable-component-extensions-with-background-pages',
+                '--disable-default-apps',
+                '--disable-extensions-file-access-check',
+                '--disable-extensions-http-throttling',
+                '--disable-ipc-flooding-protection',
+                '--no-default-browser-check',
+                '--no-pings',
+                '--password-store=basic',
+                '--use-mock-keychain',
+                '--disable-blink-features=AutomationControlled',
+                '--exclude-switches=enable-automation',
+                '--disable-automation',
+                '--disable-save-password-bubble',
+                '--disable-component-update',
+                '--disable-domain-reliability',
+                '--disable-sync',
+                '--disable-notifications',
+                '--disable-desktop-notifications'
+            ],
+            timeout: 60000,
+            // USER AGENT DINÂMICO
+            userAgent: randomUserAgent,
+            // VIEWPORT DINÂMICO
+            defaultViewport: {
+                ...randomViewport,
+                isMobile: false,
+                hasTouch: false,
+                isLandscape: true
+            }
+        },
+        authTimeoutMs: 60000,
+        qrMaxRetries: 3,
+        takeoverTimeoutMs: 30000,
+        // CONFIGURAÇÕES ADICIONAIS ANTI-DETECÇÃO
+        qrTimeoutMs: 45000,
+        restartOnAuthFail: true
     });
 };
 
@@ -462,10 +526,51 @@ client.on("qr", (qr) => {
   console.log('📋 Dica: Se estiver em um servidor, copie o QR do terminal para escanear');
 });
 
-// Evento para indicar que o cliente está pronto
-client.on("ready", () => {
+// INTERCEPTAÇÃO ANTI-DETECÇÃO
+client.on('authenticated', () => {
+  console.log('🔐 AUTENTICADO COM SUCESSO!');
+});
+
+client.on('ready', async () => {
   console.log("🟢 WhatsApp conectado e pronto!");
   console.log("📱 Bot da Barbearia Santana está funcionando!");
+  
+  // SCRIPT ANTI-DETECÇÃO AVANÇADO
+  try {
+    await client.pupPage.evaluateOnNewDocument(() => {
+      // REMOVER TRACES DE AUTOMATION
+      Object.defineProperty(navigator, 'webdriver', {
+        get: () => undefined,
+      });
+      
+      // MOCK DE PROPRIEDADES REALÍSTICAS
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['pt-BR', 'pt', 'en-US', 'en'],
+      });
+      
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [1, 2, 3, 4, 5],
+      });
+      
+      // OVERRIDE CHROME AUTOMATION
+      window.chrome = {
+        runtime: {},
+      };
+      
+      // MOCK PERMISSIONS
+      const originalQuery = window.navigator.permissions.query;
+      window.navigator.permissions.query = (parameters) => (
+        parameters.name === 'notifications' ?
+          Promise.resolve({ state: Notification.permission }) :
+          originalQuery(parameters)
+      );
+    });
+    
+    console.log('🛡️ Scripts anti-detecção aplicados com sucesso!');
+  } catch (error) {
+    console.log('⚠️ Aviso: Alguns scripts anti-detecção falharam:', error.message);
+  }
+  
   reconnectAttempts = 0;
   isReconnecting = false;
   isInitialized = true;
