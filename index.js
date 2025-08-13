@@ -103,6 +103,7 @@ const reconnectClient = async () => {
 // Função para criar cliente com retry automático
 const createClient = () => {
     console.log('🔧 Criando cliente com configuração ANTI-DETECÇÃO completa...');
+    console.log('⚠️ FORÇANDO NOVO QR CODE - SEM SESSÃO SALVA');
     
     // CONFIGURAÇÕES DINÂMICAS STEALTH
     const randomUserAgent = getRandomUserAgent();
@@ -112,8 +113,9 @@ const createClient = () => {
     console.log(`📱 Viewport: ${randomViewport.width}x${randomViewport.height}`);
     
     return new Client({
+        // SEM AUTENTICAÇÃO SALVA - FORÇA QR CODE
         authStrategy: new LocalAuth({
-            clientId: "whatsapp-bot-barbearia"
+            clientId: `whatsapp-bot-new-${Date.now()}`  // ID único sempre
         }),
         puppeteer: {
             headless: true,
@@ -169,10 +171,10 @@ const createClient = () => {
             }
         },
         authTimeoutMs: 60000,
-        qrMaxRetries: 3,
+        qrMaxRetries: 5,  // Mais tentativas
         takeoverTimeoutMs: 30000,
         // CONFIGURAÇÕES ADICIONAIS ANTI-DETECÇÃO
-        qrTimeoutMs: 45000,
+        qrTimeoutMs: 60000,  // Mais tempo para QR
         restartOnAuthFail: true
     });
 };
@@ -1602,11 +1604,31 @@ async function startBot(retryCount = 0) {
     console.log('🚀 Executando client.initialize()...');
     console.log('🌐 Tentando abrir Chromium via Puppeteer...');
     
-    // Timeout para debug - se não disparar evento em 10 segundos, mostrar status
+    // FORÇAR LOGOUT ANTES DE INICIALIZAR
+    try {
+      console.log('🔄 Forçando logout de sessões antigas...');
+      if (client && typeof client.logout === 'function') {
+        await client.logout();
+        console.log('📤 Logout forçado executado');
+      }
+    } catch (error) {
+      console.log('⚠️ Aviso no logout:', error.message);
+    }
+    
+    // Aguardar um pouco após logout
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    // Timeout para debug - se não disparar evento em 15 segundos, mostrar status
     setTimeout(() => {
-        console.log('⚠️ TIMEOUT DEBUG: 10 segundos sem eventos de QR ou Ready');
+        console.log('⚠️ TIMEOUT DEBUG: 15 segundos sem eventos de QR ou Ready');
         console.log('🔍 Verificando se WhatsApp está tentando fazer login automático...');
-    }, 10000);
+        console.log('🔄 Tentando forçar logout novamente...');
+        
+        // Tentar logout novamente
+        if (client && typeof client.logout === 'function') {
+          client.logout().catch(err => console.log('Erro no logout:', err.message));
+        }
+    }, 15000);
     
     await client.initialize();
     console.log('✅ Cliente inicializado com sucesso!');
